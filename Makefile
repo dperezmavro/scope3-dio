@@ -1,4 +1,8 @@
-.PHONY: build
+.PHONY: build run
 
 build:
-	CGO_ENABLED=0 cd src && go build -o ../bin/main 
+	CGO_ENABLED=0 cd src && go build -o ../bin/main
+
+run:
+	make build
+	SCOPE3_API_TOKEN=qwerty PORT=3000 ENV=local SERVICE=abc ./bin/main

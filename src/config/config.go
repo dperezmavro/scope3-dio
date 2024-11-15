@@ -22,6 +22,11 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
 
+	apiToken, err := fromEnvString(envVarApiToken)
+	if err != nil {
+		return nil, fmt.Errorf("error populating config: %+v", err)
+	}
+
 	port, err := fromEnvUint(envVarPort)
 	if err != nil {
 		return nil, fmt.Errorf("error populating config: %+v", err)
@@ -32,10 +37,11 @@ func New() (*Config, error) {
 		Environment: Environment{
 			Name: envName,
 		},
-		Port: port,
+		Port:           port,
+		Scope3APIToken: apiToken,
 	}
 
-	return c, err
+	return c, nil
 }
 
 type Environment struct {
