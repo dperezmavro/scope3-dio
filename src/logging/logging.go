@@ -12,7 +12,7 @@ type Data map[string]interface{}
 
 func Fatal(ctx context.Context, err error, data Data, m string) {
 	log.Fatal().
-		Str(common.TraceIdKey, ctx.Value(common.TraceIdKey).(string)).
+		Str(common.CtxKeyTraceID, ctx.Value(common.CtxKeyTraceID).(string)).
 		Interface("data", data).
 		Err(err).
 		Msg(m)
@@ -20,14 +20,14 @@ func Fatal(ctx context.Context, err error, data Data, m string) {
 
 func Info(ctx context.Context, data Data, m string) {
 	log.Info().
-		Str(common.TraceIdKey, ctx.Value(common.TraceIdKey).(string)).
+		Str(common.CtxKeyTraceID, ctx.Value(common.CtxKeyTraceID).(string)).
 		Interface("data", data).
 		Msg(m)
 }
 
 func Error(ctx context.Context, err error, data Data, m string) {
 	log.Error().
-		Str(common.TraceIdKey, ctx.Value(common.TraceIdKey).(string)).
+		Str(common.CtxKeyTraceID, ctx.Value(common.CtxKeyTraceID).(string)).
 		Interface("data", data).
 		Err(err).
 		Msg(m)

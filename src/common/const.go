@@ -1,7 +1,18 @@
 package common
 
 const (
-	TraceIdKey = "TraceId"
+	// CtxKeyTraceID is the key for the TraceId value in contexts
+	CtxKeyTraceID = "TraceId"
 
-	BackgroundTraceId = "background-trace-id"
+	// BackgroundTraceID default, locally generated traceId
+	BackgroundTraceID = "background-trace-id"
+
+	// HeaderTraceID is the trace ID header.
+	HeaderTraceID = "X-Trace-Id"
+
+	// HeaderContentType is content type header.
+	HeaderContentType = "Content-Type"
+
+	// HeaderAuthorization is the value of the authorization header.
+	HeaderAuthorization = "Authorization"
 )
