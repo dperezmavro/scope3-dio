@@ -6,8 +6,11 @@ var Default = Config{
 	Environment: Environment{
 		Name: defaultEnvName,
 	},
-	Port:        defaultPort,
-	ServiceName: defaultServiceName,
+	Port: defaultPort,
+	Service: Service{
+		Name:    defaultServiceName,
+		Version: defaultServiceVersion,
+	},
 }
 
 // returns a new Config object, or error
@@ -33,8 +36,16 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
 
+	version, err := fromEnvInt(envVarServiceVersion)
+	if err != nil {
+		return nil, fmt.Errorf("error populating config: %+v", err)
+	}
+
 	c := &Config{
-		ServiceName: serviceName,
+		Service: Service{
+			Name:    serviceName,
+			Version: version,
+		},
 		Environment: Environment{
 			Name: envName,
 		},
@@ -50,9 +61,14 @@ type Environment struct {
 	Name string
 }
 
+type Service struct {
+	Name    string
+	Version int
+}
+
 type Config struct {
 	Environment    Environment
-	ServiceName    string
+	Service        Service
 	Port           int
 	Scope3APIToken string
 }

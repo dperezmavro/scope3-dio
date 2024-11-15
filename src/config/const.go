@@ -11,6 +11,9 @@ const (
 	// the serice's name
 	envVarServiceName = "SERVICE"
 
+	// the serice's version
+	envVarServiceVersion = "VERSION"
+
 	// scope3 api token
 	envVarApiToken = "SCOPE3_API_TOKEN"
 )
@@ -25,6 +28,9 @@ const (
 
 	// default service name
 	defaultServiceName = "localService"
+
+	// default service version
+	defaultServiceVersion = 0
 
 	// default scope3 token
 	defaultApiToken = "unusable_token"

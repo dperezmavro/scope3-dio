@@ -1,0 +1,18 @@
+package server
+
+import (
+	"net/http"
+
+	"github.com/scope3-dio/config"
+)
+
+type RouterConfig struct {
+	Conf        *config.Config
+	HealthCheck http.HandlerFunc
+}
+
+type healthCheckResponse struct {
+	Environment string `json:"environment"`
+	Service     string `json:"service"`
+	Version     int    `json:"version"`
+}
