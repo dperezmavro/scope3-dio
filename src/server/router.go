@@ -20,7 +20,11 @@ func CreateRouter(
 		),
 	)
 
-	router.Get("/healthcheck", healthCheck(conf))
+	router.Get("/healthcheck",
+		traceIdMiddleware(
+			healthCheck(conf),
+		),
+	)
 
 	return router
 }

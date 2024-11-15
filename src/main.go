@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	ctx := context.WithValue(context.Background(), common.TraceIdKey, common.BackgroundTraceId)
+	ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, common.BackgroundTraceID)
 
 	conf, err := config.New()
 	if err != nil {
@@ -23,13 +23,13 @@ func main() {
 
 	scope3Client := scope3.New(conf.Scope3APIToken)
 	defaultSize := 10
-	storageClient, err := storage.New(defaultSize)
+	storageClient, err := storage.New(defaultSize, scope3Client)
 	if err != nil {
 		logging.Fatal(ctx, err, logging.Data{"size": defaultSize}, "unable to initialise storage client")
 	}
 
 	// start server
-	var httpHandler http.Handler = server.CreateRouter(*conf, scope3Client, storageClient)
+	var httpHandler http.Handler = server.CreateRouter(*conf, storageClient)
 
 	logging.Info(ctx, logging.Data{
 		"port": conf.Port,

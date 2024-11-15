@@ -1,13 +1,14 @@
 package server
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/scope3-dio/config"
 )
 
 type StorageClient interface {
-	Get(string) string
+	Get(context.Context, string) string
 }
 
 type RouterConfig struct {

@@ -42,7 +42,7 @@ func authMiddleware(key string) func(http.HandlerFunc) http.HandlerFunc {
 					"user-key": authLog,
 				}, "unauthorised")
 
-				writeResponse(map[string]string{"error": "unauthorised"}, http.StatusUnauthorized)
+				writeResponse(w, r, map[string]string{"error": "unauthorised"}, http.StatusUnauthorized)
 				return
 			}
 			next(w, r)
