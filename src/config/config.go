@@ -26,7 +26,7 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
 
-	apiToken, err := fromEnvString(envVarApiToken)
+	apiToken, err := fromEnvString(envVarAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}

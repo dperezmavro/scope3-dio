@@ -15,7 +15,7 @@ const (
 	envVarServiceVersion = "VERSION"
 
 	// scope3 api token
-	envVarApiToken = "SCOPE3_API_TOKEN"
+	envVarAPIToken = "SCOPE3_API_TOKEN"
 )
 
 // defaults
@@ -31,7 +31,4 @@ const (
 
 	// default service version
 	defaultServiceVersion = 0
-
-	// default scope3 token
-	defaultApiToken = "unusable_token"
 )
