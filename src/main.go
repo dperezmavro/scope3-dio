@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
-	"log"
 
+	"github.com/scope3-dio/common"
 	"github.com/scope3-dio/config"
 	"github.com/scope3-dio/logging"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx := context.WithValue(context.Background(), common.TraceIdKey, common.BackgroundTraceId)
 
 	c, err := config.New()
 	if err != nil {
 		logging.Fatal(ctx, err, nil, "unable to initialise config")
 	}
 
-	log.Printf("started with config %+v", c)
+	logging.Info(ctx, logging.Data{"config": *c}, "started with config")
 }
