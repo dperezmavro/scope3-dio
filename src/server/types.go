@@ -6,6 +6,14 @@ import (
 	"github.com/scope3-dio/config"
 )
 
+type Scope3Client interface {
+	FetchProperty(string) error
+}
+
+type StorageClient interface {
+	Get(string) string
+}
+
 type RouterConfig struct {
 	Conf        *config.Config
 	HealthCheck http.HandlerFunc
@@ -28,14 +36,3 @@ type RowItem struct {
 	InventoryID string `json:"InventoryID"`
 	UtcDateTime string `json:"utcDatetime"`
 }
-
-// "rows": [
-//  {
-//  "country": "US",
-//  "channel": "web",
-//  "impressions": 1000,
-//  "inventoryId": "nytimes.com",
-//  "utcDatetime": "2024-10-31"
-//  }
-//  ]
-// }

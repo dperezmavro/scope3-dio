@@ -5,10 +5,14 @@ import (
 	"github.com/scope3-dio/config"
 )
 
-func CreateRouter(conf config.Config) chi.Router {
+func CreateRouter(
+	conf config.Config,
+	sc3 Scope3Client,
+	sc StorageClient,
+) chi.Router {
 	router := chi.NewRouter()
 
-	router.Get("/v2/measure", measure(conf))
+	router.Post("/v2/measure", measure(conf))
 
 	router.Get("/healthcheck", healthCheck(conf))
 

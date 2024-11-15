@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/scope3-dio/clients/scope3"
 	"github.com/scope3-dio/common"
 	"github.com/scope3-dio/config"
 	"github.com/scope3-dio/logging"
 	"github.com/scope3-dio/server"
+	"github.com/scope3-dio/storage"
 )
 
 func main() {
@@ -19,10 +21,15 @@ func main() {
 		logging.Fatal(ctx, err, nil, "unable to initialise config")
 	}
 
-	router := server.CreateRouter(*conf)
+	scope3Client := scope3.New(conf.Scope3APIToken)
+	defaultSize := 10
+	storageClient, err := storage.New(defaultSize)
+	if err != nil {
+		logging.Fatal(ctx, err, logging.Data{"size": defaultSize}, "unable to initialise storage client")
+	}
 
 	// start server
-	var httpHandler http.Handler = router
+	var httpHandler http.Handler = server.CreateRouter(*conf, scope3Client, storageClient)
 
 	logging.Info(ctx, logging.Data{
 		"port": conf.Port,
