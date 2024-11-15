@@ -10,6 +10,7 @@ var Default = Config{
 	ServiceName: defaultServiceName,
 }
 
+// returns a new Config object, or error
 func New() (*Config, error) {
 
 	envName, err := fromEnvString(envVarEnvName)
@@ -27,7 +28,7 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
 
-	port, err := fromEnvUint(envVarPort)
+	port, err := fromEnvInt(envVarPort)
 	if err != nil {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
@@ -52,6 +53,6 @@ type Environment struct {
 type Config struct {
 	Environment    Environment
 	ServiceName    string
-	Port           uint
+	Port           int
 	Scope3APIToken string
 }

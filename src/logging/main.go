@@ -16,6 +16,7 @@ const (
 // Data represents logging data in structured logging.
 type Data map[string]interface{}
 
+// StructuredLog is used for JSON-formatted log output
 type StructuredLog struct {
 	Service     string `json:"service"`
 	Environment string `json:"environment"`
@@ -31,7 +32,7 @@ func Fatal(ctx context.Context, err error, data Data, m string) {
 	}
 	msg, err := json.Marshal(sLog)
 	if err != nil {
-		log.Fatal("unable to generate log entry for %s %+v %+v", m, err, data)
+		log.Fatalf("unable to generate log entry for %s %+v %+v", m, err, data)
 	}
 	fmt.Println(string(msg))
 	os.Exit(1)

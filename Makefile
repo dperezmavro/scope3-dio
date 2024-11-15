@@ -5,4 +5,4 @@ build:
 
 run:
 	make build
-	SCOPE3_API_TOKEN=qwerty PORT=3000 ENV=local SERVICE=abc ./bin/main
+	SCOPE3_API_TOKN=qwerty PORT=3000 ENV=local SERVICE=abc ./bin/main

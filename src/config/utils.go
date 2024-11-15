@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+// gets a string value from the environment
+// convenience function, guarantees non-empty value or error
 func fromEnvString(k string) (string, error) {
 	v := os.Getenv(k)
 	if v == "" {
@@ -15,16 +17,18 @@ func fromEnvString(k string) (string, error) {
 	return v, nil
 }
 
-func fromEnvUint(k string) (uint, error) {
+// gets a number out of an env variable.
+// convenience function, guarantees non-empty value or error
+func fromEnvInt(k string) (int, error) {
 	v, err := fromEnvString(k)
 	if err != nil {
 		return 0, err
 	}
 
-	i, err := strconv.ParseUint(v, 10, 64)
+	i, err := strconv.Atoi(v)
 	if err != nil {
 		return 0, fmt.Errorf("unable to parse %s as int: %+v", v, err)
 	}
 
-	return uint(i), nil
+	return i, nil
 }
