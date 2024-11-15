@@ -1,44 +1,69 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
+	"github.com/scope3-dio/common"
 	"github.com/scope3-dio/logging"
 )
 
-const (
-	paramChannel     = "channel"
-	paramCountry     = "country"
-	paramInventoryId = "inventoryId"
-	paramUtcDateTime = "utcDatetime"
-)
-
+// measure is the main query api. uses a local storage client for keeping data.
 func measure(sc StorageClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		logging.Info(r.Context(), nil, "in measure")
-		values := r.PostForm
 
-		if values.Get(paramInventoryId) == "" {
-			logging.Error(r.Context(), errors.New("missing val"), nil, "in measure")
-			writeResponse(w, r, map[string]string{"error": "missing paramInventoryId"}, http.StatusBadRequest)
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			writeResponse(w, r, map[string]string{"error": "unable to read body"}, http.StatusInternalServerError)
+			logging.Error(ctx, err, logging.Data{"data": string(b)}, "unable to read body")
+			return
+		}
+		defer r.Body.Close()
+
+		var data common.MeasureAPIRequest
+		err = json.Unmarshal(b, &data)
+		if err != nil {
+			writeResponse(w, r, map[string]string{"error": "unable to unmarshal body"}, http.StatusInternalServerError)
+			logging.Error(ctx, err, logging.Data{"data": string(b)}, "unable to unmarshal body")
 			return
 		}
 
-		if values.Get(paramUtcDateTime) == "" {
-			writeResponse(w, r, map[string]string{"error": "missing paramUtcDateTime"}, http.StatusBadRequest)
-			return
+		for _, row := range data.Rows {
+			if row.InventoryID == "" {
+				logging.Error(ctx, errors.New("missing val"), logging.Data{"param": "InventoryID", "function": "measure"}, "missing value")
+				writeResponse(w, r, map[string]string{"error": "missing inventoryId"}, http.StatusBadRequest)
+				return
+			}
+
+			if row.UtcDateTime == "UtcDateTime" {
+				logging.Error(ctx, errors.New("missing val"), logging.Data{"param": "UtcDateTime", "function": "measure"}, "missing value")
+				writeResponse(w, r, map[string]string{"error": "missing utcDateTime"}, http.StatusBadRequest)
+				return
+			}
+
+			if row.Impressions == 0 {
+				row.Impressions = 1000
+			}
 		}
 
-		res := sc.Get(ctx, "abc")
+		results := sc.Get(ctx, data.Rows)
+		res := []string{}
+		for _, v := range results {
+			res = append(res, v)
+		}
+		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(res, ",")))
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		_, err := w.Write([]byte(res))
+		_, err = w.Write(output)
 		if err != nil {
-			logging.Error(r.Context(), err, nil, "failed to send response body")
+			logging.Error(ctx, err, nil, "failed to send response body")
 		}
 	}
 }

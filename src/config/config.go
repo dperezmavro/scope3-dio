@@ -11,6 +11,7 @@ var Default = Config{
 		Name:    defaultServiceName,
 		Version: defaultServiceVersion,
 	},
+	Scope3APIToken: "dummy",
 }
 
 // returns a new Config object, or error

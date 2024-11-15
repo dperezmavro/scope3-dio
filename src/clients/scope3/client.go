@@ -32,7 +32,7 @@ func (s Scope3Client) FetchProperty(pq []PropertyQuery) ([]PropertyResponse, err
 		r.Rows = append(r.Rows, RowItem{
 			Channel:     p.Channel,
 			Country:     p.Country,
-			Impressions: 1000, // default
+			Impressions: p.Impressions,
 			InventoryID: p.InventoryID,
 			UtcDateTime: p.UtcDateTime,
 		})

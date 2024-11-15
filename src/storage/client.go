@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/scope3-dio/common"
 	"github.com/scope3-dio/logging"
 )
 
@@ -24,11 +26,18 @@ func New(initialSize int, f Fetcher) (*StorageClient, error) {
 	}, nil
 }
 
-func (s *StorageClient) Get(ctx context.Context, k string) string {
-	res := s.memoryStorage[k]
+func (s *StorageClient) Get(ctx context.Context, queries []common.PropertyQuery) map[string]string {
+	res := make(map[string]string, len(queries))
+	for _, pq := range queries {
+		localSotrageIndex := fmt.Sprintf("%s-%s", pq.UtcDateTime, pq.InventoryID)
+		localRes := s.memoryStorage[localSotrageIndex]
+		if localRes == "" {
+			logging.Info(ctx, logging.Data{"property": localRes}, "property not found locally")
+			// TODO: fetch it, use channel here
+		} else {
+			res[pq.InventoryID] = localRes
+		}
 
-	if res == "" {
-		logging.Info(ctx, logging.Data{"property": k}, "property not found locally")
 	}
 
 	return res
