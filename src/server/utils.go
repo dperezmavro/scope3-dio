@@ -8,7 +8,7 @@ import (
 	"github.com/scope3-dio/logging"
 )
 
-func ResponseWritter(b interface{}, c int) http.HandlerFunc {
+func writeResponse(b interface{}, c int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(c)
@@ -21,7 +21,6 @@ func ResponseWritter(b interface{}, c int) http.HandlerFunc {
 			}, "error marshalling response")
 		}
 
-		// common
 		_, err = w.Write(resp)
 		if err != nil {
 			logging.Error(r.Context(), err, nil, "failed to send response body")
