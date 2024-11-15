@@ -19,11 +19,7 @@ func main() {
 		logging.Fatal(ctx, err, nil, "unable to initialise config")
 	}
 
-	routerConfig := server.RouterConfig{
-		Conf: conf,
-	}
-
-	router := server.CreateRouter(routerConfig)
+	router := server.CreateRouter(*conf)
 
 	// start server
 	var httpHandler http.Handler = router
