@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/scope3-dio/config"
+	"github.com/scope3-dio/src/config"
 )
 
 func TestRoutes(t *testing.T) {

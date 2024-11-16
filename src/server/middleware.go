@@ -6,11 +6,11 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/scope3-dio/common"
-	"github.com/scope3-dio/logging"
+	"github.com/scope3-dio/src/common"
+	"github.com/scope3-dio/src/logging"
 )
 
-func traceIdMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func traceIDMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set trace ID on ctx
 		traceID := r.Header.Get(common.HeaderTraceID)

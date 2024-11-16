@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/scope3-dio/common"
+	"github.com/scope3-dio/src/common"
 )
 
 type StorageClient interface {

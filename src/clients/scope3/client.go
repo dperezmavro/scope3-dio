@@ -2,42 +2,72 @@ package scope3
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"sync"
 
-	"github.com/scope3-dio/common"
+	"github.com/scope3-dio/src/common"
+	"github.com/scope3-dio/src/logging"
 )
 
-// Scope3Client is the client to interact with the scope3 api
-type Scope3Client struct {
+// Client is the client to interact with the scope3 api
+type Client struct {
 	hc       *http.Client
 	apiToken string
+	queries  chan common.PropertyQuery
+	results  chan []common.PropertyResponse
+	errors   chan error
+	wg       *sync.WaitGroup
 }
 
-func New(t string) Scope3Client {
-	return Scope3Client{
+func New(
+	token string,
+	errors chan error,
+	queries chan common.PropertyQuery,
+	results chan []common.PropertyResponse,
+	wg *sync.WaitGroup,
+) Client {
+	c := Client{
 		hc:       http.DefaultClient,
-		apiToken: t,
+		apiToken: token,
+		queries:  queries,
+		results:  results,
+		errors:   errors,
+		wg:       wg,
 	}
+
+	return c
 }
 
-func (s Scope3Client) FetchProperty(pq []PropertyQuery) ([]PropertyResponse, error) {
+func (s *Client) StartListening(ctx context.Context) {
+	// wait for the listenForProperties goroutine
+	s.wg.Add(1)
+	logging.Info(ctx, logging.Data{"function": "client.StartListening"}, "starting scope3 goroutine listener")
+	go listenForProperties(
+		s,
+		s.queries,
+		s.results,
+		s.errors,
+	)
+}
 
-	r := MeasureAPIRequest{}
+func (s *Client) fetchProperty(pq common.PropertyQuery) ([]common.PropertyResponse, error) {
 
-	for _, p := range pq {
-		r.Rows = append(r.Rows, RowItem{
-			Channel:     p.Channel,
-			Country:     p.Country,
-			Impressions: p.Impressions,
-			InventoryID: p.InventoryID,
-			UtcDateTime: p.UtcDateTime,
-		})
+	r := MeasureAPIRequest{
+		Rows: []RowItem{
+			{
+				Channel:     pq.Channel,
+				Country:     pq.Country,
+				Impressions: pq.Impressions,
+				InventoryID: pq.InventoryID,
+				UtcDateTime: pq.UtcDateTime,
+			},
+		},
 	}
-
 	requestBody, err := json.Marshal(r)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request for properties %+v: %+v", pq, err)
@@ -67,4 +97,25 @@ func (s Scope3Client) FetchProperty(pq []PropertyQuery) ([]PropertyResponse, err
 	log.Println(string(b))
 
 	return nil, nil
+}
+
+func listenForProperties(
+	c *Client,
+	queries chan common.PropertyQuery,
+	results chan []common.PropertyResponse,
+	errors chan error,
+) {
+	for {
+		properties := <-queries
+		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenforproperties")
+		logging.Info(ctx, logging.Data{"properties": properties}, "fetching property")
+		propertyResults, err := c.fetchProperty(properties)
+		if err != nil {
+			logging.Error(ctx, err, logging.Data{"properties": properties}, "error in fetching")
+			errors <- fmt.Errorf("error fetching %+v: %+v", properties, err)
+		}
+
+		logging.Info(ctx, logging.Data{"properties": properties}, "fetching property")
+		results <- propertyResults
+	}
 }

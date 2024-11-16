@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/scope3-dio/logging"
+	"github.com/scope3-dio/src/logging"
 )
 
 func writeResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int) {
@@ -22,5 +22,4 @@ func writeResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int)
 	if err != nil {
 		logging.Error(r.Context(), err, nil, "failed to send response body")
 	}
-	return
 }

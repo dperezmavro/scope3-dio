@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/scope3-dio/common"
-	"github.com/scope3-dio/logging"
+	"github.com/scope3-dio/src/common"
+	"github.com/scope3-dio/src/logging"
 )
 
 // measure is the main query api. uses a local storage client for keeping data.

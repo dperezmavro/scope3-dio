@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/go-chi/chi"
-	"github.com/scope3-dio/config"
+	"github.com/scope3-dio/src/config"
 )
 
 func CreateRouter(
@@ -12,7 +12,7 @@ func CreateRouter(
 	router := chi.NewRouter()
 
 	router.Post("/v2/measure",
-		traceIdMiddleware(
+		traceIDMiddleware(
 			// this auth is temporary, just does a static key check
 			authMiddleware(conf.Scope3APIToken)(
 				measure(sc),
@@ -21,7 +21,7 @@ func CreateRouter(
 	)
 
 	router.Get("/healthcheck",
-		traceIdMiddleware(
+		traceIDMiddleware(
 			healthCheck(conf),
 		),
 	)

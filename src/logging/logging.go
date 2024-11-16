@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/rs/zerolog/log"
-	"github.com/scope3-dio/common"
+	"github.com/scope3-dio/src/common"
 )
 
 // Data represents logging data in structured logging.
