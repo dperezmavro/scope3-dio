@@ -22,7 +22,11 @@ var (
 )
 
 func main() {
-	ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, common.BackgroundTraceID)
+	ctx := context.WithValue(
+		context.Background(),
+		common.CtxKeyTraceID,
+		common.BackgroundTraceID,
+	)
 
 	conf, err := config.New()
 	if err != nil {
@@ -40,7 +44,6 @@ func main() {
 	// start listening for async fetches
 	scope3Client.StartListening(ctx)
 
-	// defaultSize := 10
 	storageClient, err := storage.New(
 		1e7, 1<<30, 64,
 		errorChannel,
@@ -62,7 +65,7 @@ func main() {
 		for {
 			asyncErr := <-errorChannel
 			if asyncErr != nil {
-				logging.Error(context.Background(), asyncErr, logging.Data{"goroutine": "main error listener"}, "error")
+				logging.Error(ctx, asyncErr, logging.Data{"goroutine": "main error listener"}, "error")
 			}
 		}
 	}()

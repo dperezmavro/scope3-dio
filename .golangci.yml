@@ -31,7 +31,7 @@ linters-settings:
     line-length: 300
   unused:
     # treat code as a program (not a library) and report unused exported identifiers
-    check-exported: false
+    check-exported: true
   unparam:
     # Inspect exported functions, default is false. Set to true if no external program/library imports your code.
     check-exported: true
@@ -47,22 +47,22 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - govet
     - errcheck
-    - gocyclo
-    - ineffassign
-    - typecheck
-    - revive
-    - unconvert
     - goconst
+    - gocritic
     - gocyclo
-    - staticcheck
-    - unused
-    - gosimple
+    - gocyclo
     - gofmt
     - gosec
+    - gosimple
+    - govet
+    - ineffassign
     - lll
-    - gocritic
+    - revive
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unused
   fast: false
 
 issues:
