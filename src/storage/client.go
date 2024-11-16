@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/dgraph-io/ristretto/v2"
-	"github.com/scope3-dio/src/common"
-	"github.com/scope3-dio/src/logging"
+	"github.com/dperezmavro/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/logging"
 )
 
 const defaultCacheTTL = 24 * time.Hour

@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/scope3-dio/src/clients/scope3"
-	"github.com/scope3-dio/src/common"
-	"github.com/scope3-dio/src/config"
-	"github.com/scope3-dio/src/logging"
-	"github.com/scope3-dio/src/server"
-	"github.com/scope3-dio/src/storage"
+	"github.com/dperezmavro/scope3-dio/src/clients/scope3"
+	"github.com/dperezmavro/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/config"
+	"github.com/dperezmavro/scope3-dio/src/logging"
+	"github.com/dperezmavro/scope3-dio/src/server"
+	"github.com/dperezmavro/scope3-dio/src/storage"
 )
 
 var (

@@ -2,42 +2,22 @@ package config
 
 import "fmt"
 
-var Default = Config{
-	Environment: Environment{
-		Name: defaultEnvName,
-	},
-	Port: defaultPort,
-	Service: Service{
-		Name:    defaultServiceName,
-		Version: defaultServiceVersion,
-	},
-	Scope3APIToken: "dummy",
-}
-
 // returns a new Config object, or error
 func New() (*Config, error) {
-
-	envName, err := fromEnvString(envVarEnvName)
-	if err != nil {
-		return nil, fmt.Errorf("error populating config: %+v", err)
-	}
-
-	serviceName, err := fromEnvString(envVarServiceName)
-	if err != nil {
-		return nil, fmt.Errorf("error populating config: %+v", err)
-	}
+	envName := fromEnvStringDefault(envVarEnvName, defaultEnvName)
+	serviceName := fromEnvStringDefault(envVarServiceName, defaultServiceName)
 
 	apiToken, err := fromEnvString(envVarAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
 
-	port, err := fromEnvInt(envVarPort)
+	port, err := fromEnvIntDefault(envVarPort, defaultPort)
 	if err != nil {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}
 
-	version, err := fromEnvInt(envVarServiceVersion)
+	version, err := fromEnvIntDefault(envVarServiceVersion, defaultServiceVersion)
 	if err != nil {
 		return nil, fmt.Errorf("error populating config: %+v", err)
 	}

@@ -3,8 +3,8 @@ package logging
 import (
 	"context"
 
+	"github.com/dperezmavro/scope3-dio/src/common"
 	"github.com/rs/zerolog/log"
-	"github.com/scope3-dio/src/common"
 )
 
 func Fatal(ctx context.Context, err error, data Data, m string) {

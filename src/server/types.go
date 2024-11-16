@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dgraph-io/ristretto/v2"
-	"github.com/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/common"
 )
 
 type StorageClient interface {

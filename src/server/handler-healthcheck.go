@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/scope3-dio/src/config"
+	"github.com/dperezmavro/scope3-dio/src/config"
 )
 
 // healthCheckResponse is the response type for the healthcheck endpoint

@@ -1,8 +1,8 @@
 package server
 
 import (
+	"github.com/dperezmavro/scope3-dio/src/config"
 	"github.com/go-chi/chi"
-	"github.com/scope3-dio/src/config"
 )
 
 func CreateRouter(

@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/dgraph-io/ristretto/v2"
-	"github.com/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/common"
 )
 
 // Client is an is responsible for managing our storage.

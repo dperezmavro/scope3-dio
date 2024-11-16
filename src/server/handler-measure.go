@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/scope3-dio/src/common"
-	"github.com/scope3-dio/src/logging"
+	"github.com/dperezmavro/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/logging"
 )
 
 // measure is the main query api. uses a local storage client for keeping data.
@@ -28,6 +28,12 @@ func measure(sc StorageClient) http.HandlerFunc {
 		if err != nil {
 			writeResponse(w, r, map[string]string{"error": "unable to unmarshal body"}, http.StatusInternalServerError)
 			logging.Error(ctx, err, logging.Data{"data": string(b)}, "unable to unmarshal body")
+			return
+		}
+
+		if len(data.Rows) < 1 {
+			writeResponse(w, r, map[string]string{"error": "rows must not be empty"}, http.StatusBadRequest)
+			logging.Error(ctx, err, logging.Data{"data": string(b)}, "rows must not be empty")
 			return
 		}
 

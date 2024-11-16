@@ -8,6 +8,17 @@ import (
 
 // gets a string value from the environment
 // convenience function, guarantees non-empty value or error
+func fromEnvStringDefault(k, d string) string {
+	v := os.Getenv(k)
+	if v == "" {
+		return d
+	}
+
+	return v
+}
+
+// gets a string value from the environment
+// convenience function, guarantees non-empty value or error
 func fromEnvString(k string) (string, error) {
 	v := os.Getenv(k)
 	if v == "" {
@@ -19,10 +30,10 @@ func fromEnvString(k string) (string, error) {
 
 // gets a number out of an env variable.
 // convenience function, guarantees non-empty value or error
-func fromEnvInt(k string) (int, error) {
+func fromEnvIntDefault(k string, d int) (int, error) {
 	v, err := fromEnvString(k)
 	if err != nil {
-		return 0, err
+		return d, err
 	}
 
 	i, err := strconv.Atoi(v)

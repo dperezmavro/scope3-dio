@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dperezmavro/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/logging"
 	"github.com/google/uuid"
-	"github.com/scope3-dio/src/common"
-	"github.com/scope3-dio/src/logging"
 )
 
 func traceIDMiddleware(next http.HandlerFunc) http.HandlerFunc {

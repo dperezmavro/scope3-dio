@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/scope3-dio/src/common"
-	"github.com/scope3-dio/src/logging"
+	"github.com/dperezmavro/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/logging"
 )
 
 // Client is the client to interact with the scope3 api

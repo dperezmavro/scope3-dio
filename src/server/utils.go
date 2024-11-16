@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/scope3-dio/src/common"
-	"github.com/scope3-dio/src/logging"
+	"github.com/dperezmavro/scope3-dio/src/common"
+	"github.com/dperezmavro/scope3-dio/src/logging"
 )
 
 func writeResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int) {
