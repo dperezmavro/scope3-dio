@@ -103,7 +103,16 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 	m := MeasureAPIResponse{}
 	err = json.Unmarshal(b, &m)
 	if err != nil {
-		logging.Error(ctx, err, logging.Data{"properties": pq, "function": "fetchProperty", "response": string(b)}, "unable to unmarshal api response")
+		logging.Error(
+			ctx,
+			err,
+			logging.Data{
+				"properties": pq,
+				"function":   "fetchProperty",
+				"response":   string(b),
+			},
+			"unable to unmarshal api response",
+		)
 		return common.PropertyResponse{}, fmt.Errorf("unable to unmarshal api response: %+v", err)
 	}
 

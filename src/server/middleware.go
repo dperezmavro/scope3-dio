@@ -55,6 +55,13 @@ func performance(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		next(w, r)
-		logging.Info(r.Context(), logging.Data{"unit": "microseconds", "duration": time.Since(now).Microseconds()}, "duration")
+		logging.Info(
+			r.Context(),
+			logging.Data{
+				"unit":     "microseconds",
+				"duration": time.Since(now).Microseconds(),
+			},
+			"duration",
+		)
 	}
 }

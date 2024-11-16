@@ -34,13 +34,29 @@ func measure(sc StorageClient) http.HandlerFunc {
 		// do some sanity checking on the values
 		for _, row := range data.Rows {
 			if row.InventoryID == "" {
-				logging.Error(ctx, errors.New("missing val"), logging.Data{"param": "InventoryID", "function": "measure"}, "missing value")
+				logging.Error(
+					ctx,
+					errors.New("missing val"),
+					logging.Data{
+						"param":    "InventoryID",
+						"function": "measure",
+					},
+					"missing value",
+				)
 				writeResponse(w, r, map[string]string{"error": "missing inventoryId"}, http.StatusBadRequest)
 				return
 			}
 
 			if row.UtcDateTime == "UtcDateTime" {
-				logging.Error(ctx, errors.New("missing val"), logging.Data{"param": "UtcDateTime", "function": "measure"}, "missing value")
+				logging.Error(
+					ctx,
+					errors.New("missing val"),
+					logging.Data{
+						"param":    "UtcDateTime",
+						"function": "measure",
+					},
+					"missing value",
+				)
 				writeResponse(w, r, map[string]string{"error": "missing utcDateTime"}, http.StatusBadRequest)
 				return
 			}

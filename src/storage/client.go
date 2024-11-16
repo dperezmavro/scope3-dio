@@ -58,7 +58,15 @@ func New(
 func (s *Client) StartListening(ctx context.Context) {
 	// wait for the listenForProperties goroutine
 	s.wg.Add(1)
-	logging.Info(ctx, logging.Data{"function": "client.StartListening", "listener": "listenForResults", "package": "storage"}, "listener starting")
+	logging.Info(
+		ctx,
+		logging.Data{
+			"function": "client.StartListening",
+			"listener": "listenForResults",
+			"package":  "storage",
+		},
+		"listener starting",
+	)
 	go listenForResults(s)
 }
 
