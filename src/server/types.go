@@ -7,5 +7,5 @@ import (
 )
 
 type StorageClient interface {
-	Get(context.Context, []common.PropertyQuery) map[string]string
+	Get(context.Context, []common.PropertyQuery) []string
 }

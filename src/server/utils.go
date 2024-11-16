@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/scope3-dio/src/common"
 	"github.com/scope3-dio/src/logging"
 )
 
 func writeResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int) {
 	w.WriteHeader(c)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJson)
 
 	resp, err := json.Marshal(b)
 	if err != nil {

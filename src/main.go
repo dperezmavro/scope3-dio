@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	queryChannel    = make(chan common.PropertyQuery, 100)
-	responseChannel = make(chan []common.PropertyResponse, 100)
-	errorChannel    = make(chan error, 10)
+	queryChannel    = make(chan common.PropertyQuery)
+	responseChannel = make(chan common.PropertyResponse)
+	errorChannel    = make(chan error)
 	wg              = &sync.WaitGroup{}
 )
 
@@ -37,18 +37,23 @@ func main() {
 		wg,
 	)
 
+	// start listening for async fetches
 	scope3Client.StartListening(ctx)
 
 	// defaultSize := 10
-	storageClient := storage.New(
+	storageClient, err := storage.New(
+		1e7, 1<<30, 64,
 		errorChannel,
 		queryChannel,
 		responseChannel,
 		wg,
 	)
-	// if err != nil {
-	// 	logging.Fatal(ctx, err, logging.Data{"size": defaultSize}, "unable to initialise storage client")
-	// }
+	if err != nil {
+		logging.Fatal(ctx, err, nil, "unable to initialise storage client")
+	}
+
+	// start listening for async stores
+	storageClient.StartListening(ctx)
 
 	// start server
 	var httpHandler http.Handler = server.CreateRouter(*conf, storageClient)

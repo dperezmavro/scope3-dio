@@ -15,4 +15,7 @@ const (
 
 	// HeaderAuthorization is the value of the authorization header.
 	HeaderAuthorization = "Authorization"
+
+	// HeaderValueContentTypeJson represents the value for this content type
+	HeaderValueContentTypeJson = "application/json"
 )

@@ -49,16 +49,20 @@ func measure(sc StorageClient) http.HandlerFunc {
 			if row.Impressions == 0 {
 				row.Impressions = 1000
 			}
+
+			if row.Weight == 0 {
+				row.Weight = 1
+			}
 		}
 
 		results := sc.Get(ctx, data.Rows)
-		res := []string{}
+		res := make([]string, len(results))
 		for _, v := range results {
 			res = append(res, v)
 		}
 		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(res, ",")))
 
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJson)
 		w.WriteHeader(http.StatusOK)
 
 		_, err = w.Write(output)

@@ -7,8 +7,8 @@ type MeasureAPIRequest struct {
 
 // RowItem is an item in the Rows slice of MeasureAPIRequest
 type RowItem struct {
-	Channel     string `json:"channel"`
-	Country     string `json:"country"`
+	Channel     string `json:"channel,omitempty"`
+	Country     string `json:"country,omitempty"`
 	Impressions int    `json:"impressions"`
 	InventoryID string `json:"InventoryId"`
 	UtcDateTime string `json:"utcDatetime"`
