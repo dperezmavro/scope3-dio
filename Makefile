@@ -4,18 +4,27 @@ TOKEN=$(shell cat token.secret.txt) # this is a one-line file containing an auth
 build:
 	CGO_ENABLED=0 cd src && go build -o ../bin/main
 
-docker:
+docker-build:
 	docker build \
 		--platform linux/amd64 \
 		--tag "dio-scope3" \
 		-f Dockerfile .
+
+docker-run:
+	make docker-build
+	docker run -p \
+		3000:3000 \
+		-e SCOPE3_API_TOKEN=${TOKEN} \
+		--rm -ti \
+		--name dio-scope3 \
+		dio-scope3:latest
 
 lint:
 	golangci-lint run ./...
 
 run:
 	make build
-	SCOPE3_API_TOKEN="${TOKEN}" VERSION=1 PORT=3000 ENV=dev SERVICE=dio-scope3 ./bin/main
+	SCOPE3_API_TOKEN=${TOKEN} VERSION=1 PORT=3000 ENV=dev SERVICE=dio-scope3 ./bin/main
 
 test:
 	cd src && go test ./...

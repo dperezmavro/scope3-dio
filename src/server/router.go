@@ -26,5 +26,11 @@ func CreateRouter(
 		),
 	)
 
+	router.Get("/metrics",
+		traceIDMiddleware(
+			metrics(sc),
+		),
+	)
+
 	return router
 }

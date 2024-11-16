@@ -12,11 +12,13 @@ import (
 
 // Client is an is responsible for managing our storage.
 type Client struct {
+	// channels for communicating with other goroutes to share results
 	errors  chan error
 	queries chan common.PropertyQuery
 	results chan common.PropertyResponse
 	wg      *sync.WaitGroup
 
+	// in-memory cache
 	cache *ristretto.Cache[string, string]
 }
 
@@ -41,7 +43,6 @@ func New(
 			"MaxCost":     maxCost,
 			"BufferItems": bufferItems,
 		}, "error in NewCache")
-		errors <- err
 		return nil, err
 	}
 
@@ -58,27 +59,19 @@ func (s *Client) StartListening(ctx context.Context) {
 	// wait for the listenForProperties goroutine
 	s.wg.Add(1)
 	logging.Info(ctx, logging.Data{"function": "client.StartListening", "listener": "listenForResults", "package": "storage"}, "listener starting")
-	go listenForResults(
-		s,
-		s.results,
-		s.errors,
-	)
+	go listenForResults(s)
 }
 
-func listenForResults(
-	c *Client,
-	results chan common.PropertyResponse,
-	errChan chan error,
-) {
+func listenForResults(c *Client) {
 	for {
-		property := <-results
+		property := <-c.results
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenForResults")
 		logging.Info(ctx, logging.Data{"property": property, "weight": property.Weight}, "storing property")
 		ok := c.cache.Set(property.IndexName(), property.Body, int64(property.Weight))
 		if !ok {
 			err := errors.New("unable to set key")
 			logging.Error(ctx, err, logging.Data{"key": property.IndexName(), "result": property.Body}, "save error")
-			errChan <- err
+			c.errors <- err
 		}
 	}
 }
@@ -109,4 +102,8 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []stri
 
 	// only return filled slots
 	return res[:foundCounter]
+}
+
+func (s *Client) Metrics(ctx context.Context) *ristretto.Metrics {
+	return s.cache.Metrics
 }

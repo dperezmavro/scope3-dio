@@ -13,7 +13,7 @@ type healthCheckResponse struct {
 	Version     int    `json:"version"`
 }
 
-// healthCheck is a handler for used during deployment and monitoring whilst the service runs
+// healthCheck is a handler used during deployment and monitoring whilst the service runs
 func healthCheck(conf config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body := healthCheckResponse{
