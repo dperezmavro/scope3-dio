@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/scope3-dio/src/common"
@@ -47,5 +48,13 @@ func authMiddleware(key string) func(http.HandlerFunc) http.HandlerFunc {
 			}
 			next(w, r)
 		}
+	}
+}
+
+func performance(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		now := time.Now()
+		next(w, r)
+		logging.Info(r.Context(), logging.Data{"duration-in-micro": time.Since(now).Microseconds()}, "duration")
 	}
 }

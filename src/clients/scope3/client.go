@@ -54,12 +54,7 @@ func (s *Client) StartListening(ctx context.Context) {
 		},
 		"listener starting",
 	)
-	go listenForProperties(
-		s,
-		s.queries,
-		s.results,
-		s.errors,
-	)
+	go listenForProperties(s)
 }
 
 func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (common.PropertyResponse, error) {
@@ -122,37 +117,28 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 		}, nil
 	}
 
-	serialisedResult, err := json.Marshal(m.Rows[0])
-	if err != nil {
-		logging.Error(ctx, err, logging.Data{"rows": m.Rows}, "marshaling error")
-		return common.PropertyResponse{}, fmt.Errorf("unable to marshal rows: %+v", err)
-	}
-
 	return common.PropertyResponse{
 		InventoryID: pq.InventoryID,
 		UtcDateTime: pq.UtcDateTime,
 		Weight:      pq.Weight,
-		Body:        string(serialisedResult),
+		Body:        fmt.Sprintf("%v", m.Rows[0].TotalEmissions),
 	}, nil
 }
 
-func listenForProperties(
-	c *Client,
-	queries chan common.PropertyQuery,
-	results chan common.PropertyResponse,
-	errors chan error,
-) {
+func listenForProperties(c *Client) {
 	for {
-		properties := <-queries
+		property := <-c.queries
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenforproperties")
-		logging.Info(ctx, logging.Data{"properties": properties}, "fetching property")
-		propertyResults, err := c.fetchProperty(ctx, properties)
+		logging.Info(ctx, logging.Data{"properties": property}, "fetching property")
+		propertyResults, err := c.fetchProperty(ctx, property)
 		if err != nil {
-			logging.Error(ctx, err, logging.Data{"properties": properties}, "error in fetching")
-			errors <- fmt.Errorf("error fetching %+v: %+v", properties, err)
+			logging.Error(ctx, err, logging.Data{"properties": property}, "error in fetching")
+			c.errors <- fmt.Errorf("error fetching %+v: %+v", property, err)
 		}
 
-		logging.Info(ctx, logging.Data{"properties": properties, "function": "listenForProperties"}, "store property request")
-		results <- propertyResults
+		propertyResults.InventoryID = property.InventoryID
+
+		logging.Info(ctx, logging.Data{"property": property, "function": "listenForProperties"}, "store property request")
+		c.results <- propertyResults
 	}
 }

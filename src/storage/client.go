@@ -19,7 +19,7 @@ type Client struct {
 	wg      *sync.WaitGroup
 
 	// in-memory cache
-	cache *ristretto.Cache[string, string]
+	cache *ristretto.Cache[string, common.PropertyResponse]
 }
 
 func New(
@@ -32,7 +32,7 @@ func New(
 	wg *sync.WaitGroup,
 ) (*Client, error) {
 
-	cache, err := ristretto.NewCache(&ristretto.Config[string, string]{
+	cache, err := ristretto.NewCache(&ristretto.Config[string, common.PropertyResponse]{
 		NumCounters: numberOfCounters,
 		MaxCost:     maxCost,
 		BufferItems: bufferItems,
@@ -67,7 +67,7 @@ func listenForResults(c *Client) {
 		property := <-c.results
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenForResults")
 		logging.Info(ctx, logging.Data{"property": property, "weight": property.Weight}, "storing property")
-		ok := c.cache.Set(property.IndexName(), property.Body, int64(property.Weight))
+		ok := c.cache.Set(property.IndexName(), property, int64(property.Weight))
 		if !ok {
 			err := errors.New("unable to set key")
 			logging.Error(ctx, err, logging.Data{"key": property.IndexName(), "result": property.Body}, "save error")
@@ -76,9 +76,9 @@ func listenForResults(c *Client) {
 	}
 }
 
-func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []string {
+func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []common.PropertyResponse {
 	// pre-allocate to avoid resizing
-	res := make([]string, len(queries))
+	res := make([]common.PropertyResponse, len(queries))
 	foundCounter := 0
 	for _, pq := range queries {
 
@@ -104,6 +104,6 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []stri
 	return res[:foundCounter]
 }
 
-func (s *Client) Metrics(ctx context.Context) *ristretto.Metrics {
+func (s *Client) Metrics() *ristretto.Metrics {
 	return s.cache.Metrics
 }

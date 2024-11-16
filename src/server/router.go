@@ -13,9 +13,11 @@ func CreateRouter(
 
 	router.Post("/v2/measure",
 		traceIDMiddleware(
-			// this auth is temporary, just does a static key check
-			authMiddleware(conf.Scope3APIToken)(
-				measure(sc),
+			performance(
+				// this auth is temporary, just does a static key check
+				authMiddleware(conf.Scope3APIToken)(
+					measure(sc),
+				),
 			),
 		),
 	)

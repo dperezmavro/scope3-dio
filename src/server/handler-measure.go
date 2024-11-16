@@ -57,7 +57,12 @@ func measure(sc StorageClient) http.HandlerFunc {
 		}
 
 		results := sc.Get(ctx, data.Rows)
-		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(results, ",")))
+		stringRes := make([]string, len(results))
+		for idx, r := range results {
+
+			stringRes[idx] = fmt.Sprintf(`{"propertyId": "%s", "totalEmissions": %s}`, r.InventoryID, r.Body)
+		}
+		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(stringRes, ",")))
 
 		w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJSON)
 		w.WriteHeader(http.StatusOK)

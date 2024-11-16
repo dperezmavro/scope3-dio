@@ -8,6 +8,6 @@ import (
 )
 
 type StorageClient interface {
-	Get(context.Context, []common.PropertyQuery) []string
-	Metrics(context.Context) *ristretto.Metrics
+	Get(context.Context, []common.PropertyQuery) []common.PropertyResponse
+	Metrics() *ristretto.Metrics
 }
