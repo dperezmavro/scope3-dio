@@ -3,10 +3,8 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/scope3-dio/src/common"
 	"github.com/scope3-dio/src/logging"
@@ -57,12 +55,11 @@ func measure(sc StorageClient) http.HandlerFunc {
 		}
 
 		results := sc.Get(ctx, data.Rows)
-		stringRes := make([]string, len(results))
-		for idx, r := range results {
-
-			stringRes[idx] = fmt.Sprintf(`{"propertyId": "%s", "totalEmissions": %s}`, r.InventoryID, r.Body)
+		resp, err := json.Marshal(results)
+		if err != nil {
+			logging.Error(ctx, err, nil, "marshal error")
 		}
-		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(stringRes, ",")))
+		output := resp
 
 		w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJSON)
 		w.WriteHeader(http.StatusOK)

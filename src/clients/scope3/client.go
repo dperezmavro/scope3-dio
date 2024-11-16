@@ -89,7 +89,7 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 
 	resp, err := s.hc.Do(req)
 	if err != nil {
-		logging.Error(ctx, err, logging.Data{"request": fmt.Sprintf("%+v", req), "function": "fetchProperty"}, "request-sending")
+		logging.Error(ctx, err, logging.Data{"request": req, "function": "fetchProperty"}, "request-sending")
 		return common.PropertyResponse{}, fmt.Errorf("unable to perform request for properties %+v: %+v", pq, err)
 	}
 
