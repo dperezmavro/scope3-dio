@@ -1,5 +1,10 @@
 # options for analysis running
 run:
+  go: "1.23"
+  skip-dirs:
+    - tmp
+  skip-files:
+    - ".*_test.go"
 
   # default concurrency is a available CPU number
   concurrency: 4
@@ -10,7 +15,7 @@ run:
 # all available settings of specific linters
 linters-settings:
   errcheck:
-    # report about not checking of errors in type assetions: `a := b.(MyStruct)`;
+    # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
     check-type-assertions: true
     # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`;
     check-blank: true
@@ -19,7 +24,7 @@ linters-settings:
     check-shadowing: true
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
-    min-complexity: 100
+    min-complexity: 30
   lll:
     # max line length, lines longer will be reported. Default is 120.
     # '\t' is counted as 1 character by default, and can be changed with the tab-width option
@@ -57,36 +62,25 @@ linters:
     - gofmt
     - gosec
     - lll
-    - megacheck
     - gocritic
   fast: false
 
 issues:
+  exclude-files:
+    - ".*_test.go"
+  exclude-dirs:
+    - tmp
   exclude-rules:
     - linters:
-        - golint
-      text: "don't use an underscore in package name"
-    - linters:
-        - gosec
-      text: "G101: Potential hardcoded credentials"
-    - linters:
-        - gosec
-      text: "G114:"
-    - linters:
-        - gosec
-      text: "G501:"
-    - linters:
-        - gosec
-      text: "G401:"
-    - linters:
         - revive
-      text: "and that stutters"
+      text: "unexported-return"
     - linters:
         - revive
       text: "don't use an underscore in package name"
     - linters:
-        - revive
-      text: "dot-imports"
+        - gocritic
+      text: "commentFormatting: put a space between `//` and comment text"
+
     - linters:
         - staticcheck
-      text: "SA1019"
+      text: "should not use built-in type string as key for value"

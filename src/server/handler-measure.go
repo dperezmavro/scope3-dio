@@ -33,6 +33,7 @@ func measure(sc StorageClient) http.HandlerFunc {
 			return
 		}
 
+		// do some sanity checking on the values
 		for _, row := range data.Rows {
 			if row.InventoryID == "" {
 				logging.Error(ctx, errors.New("missing val"), logging.Data{"param": "InventoryID", "function": "measure"}, "missing value")
@@ -56,13 +57,9 @@ func measure(sc StorageClient) http.HandlerFunc {
 		}
 
 		results := sc.Get(ctx, data.Rows)
-		res := make([]string, len(results))
-		for _, v := range results {
-			res = append(res, v)
-		}
-		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(res, ",")))
+		output := []byte(fmt.Sprintf(`{"rows": [%s]}`, strings.Join(results, ",")))
 
-		w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJson)
+		w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJSON)
 		w.WriteHeader(http.StatusOK)
 
 		_, err = w.Write(output)

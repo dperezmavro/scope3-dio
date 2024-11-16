@@ -10,7 +10,7 @@ import (
 
 func writeResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int) {
 	w.WriteHeader(c)
-	w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJson)
+	w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJSON)
 
 	resp, err := json.Marshal(b)
 	if err != nil {

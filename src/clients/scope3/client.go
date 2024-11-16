@@ -45,7 +45,15 @@ func New(
 func (s *Client) StartListening(ctx context.Context) {
 	// wait for the listenForProperties goroutine
 	s.wg.Add(1)
-	logging.Info(ctx, logging.Data{"function": "client.StartListening"}, "starting scope3 goroutine listener")
+	logging.Info(
+		ctx,
+		logging.Data{
+			"function": "client.StartListening",
+			"listener": "listenForProperties",
+			"package":  "scope3",
+		},
+		"listener starting",
+	)
 	go listenForProperties(
 		s,
 		s.queries,
@@ -123,6 +131,7 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 	return common.PropertyResponse{
 		InventoryID: pq.InventoryID,
 		UtcDateTime: pq.UtcDateTime,
+		Weight:      pq.Weight,
 		Body:        string(serialisedResult),
 	}, nil
 }
@@ -143,7 +152,7 @@ func listenForProperties(
 			errors <- fmt.Errorf("error fetching %+v: %+v", properties, err)
 		}
 
-		logging.Info(ctx, logging.Data{"properties": properties, "function": "listenForProperties"}, "storing property")
+		logging.Info(ctx, logging.Data{"properties": properties, "function": "listenForProperties"}, "store property request")
 		results <- propertyResults
 	}
 }

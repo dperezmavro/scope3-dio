@@ -45,17 +45,6 @@ func New(
 		return nil, err
 	}
 
-	// // set a value with a cost of 1
-	// cache.Set("key", "value", 1)
-
-	// // wait for value to pass through buffers
-	// cache.Wait()
-
-	// // get value from cache
-	// value, found := cache.Get("key")
-
-	// logging.Info(ctx, logging.Data{"properties": properties, "function": "listenForProperties"}, "storing property")
-
 	return &Client{
 		errors:  errors,
 		queries: queries,
@@ -68,7 +57,7 @@ func New(
 func (s *Client) StartListening(ctx context.Context) {
 	// wait for the listenForProperties goroutine
 	s.wg.Add(1)
-	logging.Info(ctx, logging.Data{"function": "client.StartListening", "listener": "listenForResults"}, "starting storage goroutine listener")
+	logging.Info(ctx, logging.Data{"function": "client.StartListening", "listener": "listenForResults", "package": "storage"}, "listener starting")
 	go listenForResults(
 		s,
 		s.results,
@@ -84,8 +73,8 @@ func listenForResults(
 	for {
 		property := <-results
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenForResults")
-		logging.Info(ctx, logging.Data{"property": property}, "saving property")
-		ok := c.cache.Set(property.IndexName(), property.Body, property.Weight)
+		logging.Info(ctx, logging.Data{"property": property, "weight": property.Weight}, "storing property")
+		ok := c.cache.Set(property.IndexName(), property.Body, int64(property.Weight))
 		if !ok {
 			err := errors.New("unable to set key")
 			logging.Error(ctx, err, logging.Data{"key": property.IndexName(), "result": property.Body}, "save error")
@@ -95,26 +84,29 @@ func listenForResults(
 }
 
 func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []string {
+	// pre-allocate to avoid resizing
 	res := make([]string, len(queries))
+	foundCounter := 0
 	for _, pq := range queries {
 
 		localSotrageIndex := pq.IndexName()
-		localRes := ""
 		v, found := s.cache.Get(localSotrageIndex)
 
 		if !found {
-			logging.Info(ctx, logging.Data{"property": localRes}, "property not found locally")
+			logging.Info(ctx, logging.Data{"property": pq.IndexName()}, "property not found locally")
+			s.wg.Add(1)
 			go func() {
-				s.wg.Add(1)
 				defer s.wg.Done()
 				s.queries <- pq
 			}()
 		} else {
-			logging.Info(ctx, logging.Data{"property": localRes}, "property exists locally")
-			res = append(res, v)
+			logging.Info(ctx, logging.Data{"property": pq.IndexName()}, "property exists locally")
+			res[foundCounter] = v
+			foundCounter++
 		}
 
 	}
 
-	return res
+	// only return filled slots
+	return res[:foundCounter]
 }

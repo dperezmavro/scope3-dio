@@ -52,8 +52,20 @@ func main() {
 		logging.Fatal(ctx, err, nil, "unable to initialise storage client")
 	}
 
-	// start listening for async stores
+	// start listening for async store requests
 	storageClient.StartListening(ctx)
+
+	// start listening to error channel
+	wg.Add(1)
+	go func() {
+		logging.Info(ctx, logging.Data{"goroutine": "main error listener"}, "listener starting")
+		for {
+			asyncErr := <-errorChannel
+			if asyncErr != nil {
+				logging.Error(context.Background(), asyncErr, logging.Data{"goroutine": "main error listener"}, "error")
+			}
+		}
+	}()
 
 	// start server
 	var httpHandler http.Handler = server.CreateRouter(*conf, storageClient)

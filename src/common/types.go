@@ -9,7 +9,7 @@ type PropertyQuery struct {
 	Impressions int    `json:"impressions"`
 	InventoryID string `json:"inventoryId"`
 	UtcDateTime string `json:"utcDatetime"`
-	Weight      int64  `json:"weight"`
+	Weight      int    `json:"weight"`
 }
 
 func (p PropertyQuery) IndexName() string {
@@ -26,7 +26,7 @@ type PropertyResponse struct {
 	InventoryID string
 	UtcDateTime string
 	Body        string
-	Weight      int64
+	Weight      int
 }
 
 func (p PropertyResponse) IndexName() string {
