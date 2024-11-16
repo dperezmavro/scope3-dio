@@ -52,24 +52,8 @@ func New() (*Config, error) {
 		},
 		Port:           port,
 		Scope3APIToken: apiToken,
+		WaitForMissing: defaultWaitForMissing,
 	}
 
 	return c, nil
-}
-
-type Environment struct {
-	// DefaultRequestTimeout int
-	Name string
-}
-
-type Service struct {
-	Name    string
-	Version int
-}
-
-type Config struct {
-	Environment    Environment
-	Service        Service
-	Port           int
-	Scope3APIToken string
 }

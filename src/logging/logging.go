@@ -7,9 +7,6 @@ import (
 	"github.com/scope3-dio/src/common"
 )
 
-// Data represents logging data in structured logging.
-type Data map[string]interface{}
-
 func Fatal(ctx context.Context, err error, data Data, m string) {
 	log.Fatal().
 		Str(common.CtxKeyTraceID, ctx.Value(common.CtxKeyTraceID).(string)).

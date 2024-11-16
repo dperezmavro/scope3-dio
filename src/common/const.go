@@ -4,9 +4,6 @@ const (
 	// CtxKeyTraceID is the key for the TraceId value in contexts
 	CtxKeyTraceID = "TraceId"
 
-	// BackgroundTraceID default, locally generated traceId
-	BackgroundTraceID = "background-trace-id"
-
 	// HeaderTraceID is the trace ID header.
 	HeaderTraceID = "X-Trace-Id"
 

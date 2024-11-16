@@ -25,7 +25,7 @@ func main() {
 	ctx := context.WithValue(
 		context.Background(),
 		common.CtxKeyTraceID,
-		common.BackgroundTraceID,
+		"initialising",
 	)
 
 	conf, err := config.New()
@@ -50,6 +50,7 @@ func main() {
 		queryChannel,
 		responseChannel,
 		wg,
+		conf.WaitForMissing,
 	)
 	if err != nil {
 		logging.Fatal(ctx, err, nil, "unable to initialise storage client")

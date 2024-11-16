@@ -31,4 +31,7 @@ const (
 
 	// default service version
 	defaultServiceVersion = 0
+
+	// defaultWaitForMissing changes the behaviour of the storage client
+	defaultWaitForMissing = false
 )
