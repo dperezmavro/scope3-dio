@@ -1,5 +1,5 @@
 .PHONY: build lint run test
-TOKEN=$(shell cat token.secret.txt) # this is a one-line file containing an auth token
+TOKEN=$(shell echo ${SCOPE3_API_TOKEN}) # expects the SCOPE3_API_TOKEN to be defined
 
 build:
 	CGO_ENABLED=0 cd src && go build -o ../bin/main
