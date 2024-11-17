@@ -8,6 +8,7 @@ import (
 
 	"github.com/dperezmavro/scope3-dio/src/common"
 	"github.com/dperezmavro/scope3-dio/src/logging"
+	"github.com/dperezmavro/scope3-dio/src/utils"
 )
 
 // measure is the main query api. uses a local storage client for keeping data.
@@ -17,7 +18,7 @@ func measure(sc StorageClient) http.HandlerFunc {
 
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
-			writeResponse(w, r, map[string]string{"error": "unable to read body"}, http.StatusInternalServerError)
+			utils.WriteResponse(w, r, map[string]string{"error": "unable to read body"}, http.StatusInternalServerError)
 			logging.Error(ctx, err, logging.Data{"data": string(b)}, "unable to read body")
 			return
 		}
@@ -26,13 +27,13 @@ func measure(sc StorageClient) http.HandlerFunc {
 		var data common.MeasureAPIRequest
 		err = json.Unmarshal(b, &data)
 		if err != nil {
-			writeResponse(w, r, map[string]string{"error": "unable to unmarshal body"}, http.StatusInternalServerError)
+			utils.WriteResponse(w, r, map[string]string{"error": "unable to unmarshal body"}, http.StatusInternalServerError)
 			logging.Error(ctx, err, logging.Data{"data": string(b)}, "unable to unmarshal body")
 			return
 		}
 
 		if len(data.Rows) < 1 {
-			writeResponse(w, r, map[string]string{"error": "rows must not be empty"}, http.StatusBadRequest)
+			utils.WriteResponse(w, r, map[string]string{"error": "rows must not be empty"}, http.StatusBadRequest)
 			logging.Error(ctx, err, logging.Data{"data": string(b)}, "rows must not be empty")
 			return
 		}
@@ -49,7 +50,7 @@ func measure(sc StorageClient) http.HandlerFunc {
 					},
 					"missing value",
 				)
-				writeResponse(w, r, map[string]string{"error": "missing inventoryId"}, http.StatusBadRequest)
+				utils.WriteResponse(w, r, map[string]string{"error": "missing inventoryId"}, http.StatusBadRequest)
 				return
 			}
 
@@ -63,7 +64,7 @@ func measure(sc StorageClient) http.HandlerFunc {
 					},
 					"missing value",
 				)
-				writeResponse(w, r, map[string]string{"error": "missing utcDateTime"}, http.StatusBadRequest)
+				utils.WriteResponse(w, r, map[string]string{"error": "missing utcDateTime"}, http.StatusBadRequest)
 				return
 			}
 

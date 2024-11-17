@@ -2,6 +2,8 @@ package server
 
 import (
 	"net/http"
+
+	"github.com/dperezmavro/scope3-dio/src/utils"
 )
 
 type metricsResponse struct {
@@ -19,6 +21,6 @@ func metrics(sc StorageClient) http.HandlerFunc {
 			KeysAdded: m.KeysAdded(),
 			Ratio:     m.Ratio(),
 		}
-		writeResponse(w, r, mr, http.StatusOK)
+		utils.WriteResponse(w, r, mr, http.StatusOK)
 	}
 }

@@ -14,32 +14,16 @@ import (
 const defaultCacheTTL = 24 * time.Hour
 
 func New(
-	numberOfCounters int64,
-	maxCost int64,
-	bufferItems int64,
-	errors chan error,
+	cache Implementation,
+	errorChan chan error,
 	queries chan common.PropertyQuery,
 	results chan common.PropertyResponse,
 	wg *sync.WaitGroup,
 	waitForMissing bool,
 ) (*Client, error) {
 
-	cache, err := ristretto.NewCache(&ristretto.Config[string, common.PropertyResponse]{
-		NumCounters: numberOfCounters,
-		MaxCost:     maxCost,
-		BufferItems: bufferItems,
-	})
-	if err != nil {
-		logging.Error(context.Background(), err, logging.Data{
-			"NumCounters": numberOfCounters,
-			"MaxCost":     maxCost,
-			"BufferItems": bufferItems,
-		}, "error in NewCache")
-		return nil, err
-	}
-
 	return &Client{
-		errors:                errors,
+		errors:                errorChan,
 		queries:               queries,
 		results:               results,
 		wg:                    wg,
@@ -138,5 +122,6 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []comm
 }
 
 func (s *Client) Metrics() *ristretto.Metrics {
-	return s.cache.Metrics
+	// return s.cache.Metrics
+	return nil
 }

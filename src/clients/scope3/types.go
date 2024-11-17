@@ -1,5 +1,12 @@
 package scope3
 
+import "net/http"
+
+// HTTPClient interface for swaping out clients (useful in testing)
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // MeasureAPIRequest is the incoming request struct
 type MeasureAPIRequest struct {
 	Rows []RowItem `json:"rows"`

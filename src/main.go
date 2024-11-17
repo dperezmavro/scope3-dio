@@ -44,8 +44,13 @@ func main() {
 	// start listening for async fetches
 	scope3Client.StartListening(ctx)
 
+	storageImplementation, err := storage.NewStorageImplementation(1e7, 1<<30, 64)
+	if err != nil {
+		logging.Fatal(ctx, err, nil, "unable to instantiate cache implementation")
+	}
+
 	storageClient, err := storage.New(
-		1e7, 1<<30, 64,
+		storageImplementation,
 		errorChannel,
 		queryChannel,
 		responseChannel,

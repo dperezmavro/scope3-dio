@@ -2,8 +2,8 @@ package storage
 
 import (
 	"sync"
+	"time"
 
-	"github.com/dgraph-io/ristretto/v2"
 	"github.com/dperezmavro/scope3-dio/src/common"
 )
 
@@ -16,6 +16,11 @@ type Client struct {
 	wg      *sync.WaitGroup
 
 	// in-memory cache
-	cache                 *ristretto.Cache[string, common.PropertyResponse]
+	cache                 Implementation
 	waitForMissingResults bool
+}
+
+type Implementation interface {
+	Get(key string) (common.PropertyResponse, bool)
+	SetWithTTL(key string, value common.PropertyResponse, cost int64, ttl time.Duration) bool
 }

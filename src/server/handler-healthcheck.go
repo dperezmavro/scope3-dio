@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dperezmavro/scope3-dio/src/config"
+	"github.com/dperezmavro/scope3-dio/src/utils"
 )
 
 // healthCheckResponse is the response type for the healthcheck endpoint
@@ -21,6 +22,6 @@ func healthCheck(conf config.Config) http.HandlerFunc {
 			Service:     conf.Service.Name,
 			Version:     conf.Service.Version,
 		}
-		writeResponse(w, r, body, http.StatusOK)
+		utils.WriteResponse(w, r, body, http.StatusOK)
 	}
 }

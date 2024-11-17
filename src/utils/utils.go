@@ -1,4 +1,4 @@
-package server
+package utils
 
 import (
 	"encoding/json"
@@ -8,13 +8,13 @@ import (
 	"github.com/dperezmavro/scope3-dio/src/logging"
 )
 
-func writeResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int) {
+func WriteResponse(w http.ResponseWriter, r *http.Request, b interface{}, c int) {
 	w.WriteHeader(c)
 	w.Header().Set(common.HeaderContentType, common.HeaderValueContentTypeJSON)
 
 	resp, err := json.Marshal(b)
 	if err != nil {
-		logging.Fatal(r.Context(), err, logging.Data{
+		logging.Error(r.Context(), err, logging.Data{
 			"body": b,
 		}, "error marshalling response")
 	}

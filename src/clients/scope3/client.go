@@ -15,7 +15,7 @@ import (
 
 // Client is the client to interact with the scope3 api
 type Client struct {
-	hc       *http.Client
+	hc       HTTPClient
 	apiToken string
 	queries  chan common.PropertyQuery
 	results  chan common.PropertyResponse
