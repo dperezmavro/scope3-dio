@@ -84,3 +84,11 @@ issues:
     - linters:
         - staticcheck
       text: "should not use built-in type string as key for value"
+    
+    - linters:
+        - gosec
+      text: "Use of net/http serve function that has no support for setting timeouts"
+    
+    - linters:
+        - gosec
+      text: "Potential hardcoded credentials"

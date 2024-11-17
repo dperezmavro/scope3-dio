@@ -2,3 +2,4 @@
 bin/
 *.sh
 *secret*
+.vscode/
