@@ -4,3 +4,4 @@ bin/
 *.sh
 *.json
 .vscode/
+.DS_Store
