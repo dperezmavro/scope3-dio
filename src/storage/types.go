@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dgraph-io/ristretto/v2"
 	"github.com/dperezmavro/scope3-dio/src/common"
 )
 
@@ -21,6 +22,10 @@ type Client struct {
 }
 
 type Implementation interface {
+	// cache io
 	Get(key string) (common.PropertyResponse, bool)
 	SetWithTTL(key string, value common.PropertyResponse, cost int64, ttl time.Duration) bool
+
+	// for metrics
+	Metrics() *ristretto.Metrics
 }

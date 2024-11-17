@@ -15,11 +15,10 @@ type metricsResponse struct {
 // metrics is a handler for monitoring whilst the service runs
 func metrics(sc StorageClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		m := sc.Metrics()
 		mr := metricsResponse{
-			Misses:    m.Misses(),
-			KeysAdded: m.KeysAdded(),
-			Ratio:     m.Ratio(),
+			Misses:    sc.Metrics().Misses(),
+			KeysAdded: sc.Metrics().KeysAdded(),
+			Ratio:     sc.Metrics().Ratio(),
 		}
 		utils.WriteResponse(w, r, mr, http.StatusOK)
 	}

@@ -122,6 +122,5 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []comm
 }
 
 func (s *Client) Metrics() *ristretto.Metrics {
-	// return s.cache.Metrics
-	return nil
+	return s.cache.Metrics()
 }
