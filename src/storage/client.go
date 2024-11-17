@@ -55,7 +55,7 @@ func listenForResults(c *Client) {
 		ok := c.cache.SetWithTTL(property.IndexName(), property, int64(property.Weight), defaultCacheTTL)
 		if !ok {
 			err := errors.New("unable to set key")
-			logging.Error(ctx, err, logging.Data{"key": property.IndexName(), "result": property.Body}, "save error")
+			logging.Error(ctx, err, logging.Data{"key": property.IndexName(), "result": property.TotalEmissions}, "save error")
 			c.errors <- err
 		}
 	}

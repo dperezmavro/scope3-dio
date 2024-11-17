@@ -120,17 +120,17 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 
 	if len(m.Rows) < 1 {
 		return common.PropertyResponse{
-			InventoryID: pq.InventoryID,
-			UtcDateTime: pq.UtcDateTime,
-			Body:        "",
+			PropertyName:   pq.InventoryID,
+			UtcDateTime:    pq.UtcDateTime,
+			TotalEmissions: "",
 		}, nil
 	}
 
 	return common.PropertyResponse{
-		InventoryID: pq.InventoryID,
-		UtcDateTime: pq.UtcDateTime,
-		Weight:      pq.Weight,
-		Body:        fmt.Sprintf("%v", m.Rows[0].TotalEmissions),
+		PropertyName:   pq.InventoryID,
+		UtcDateTime:    pq.UtcDateTime,
+		Weight:         pq.Weight,
+		TotalEmissions: fmt.Sprintf("%v", m.Rows[0].TotalEmissions),
 	}, nil
 }
 
@@ -145,7 +145,7 @@ func listenForProperties(c *Client) {
 			c.errors <- fmt.Errorf("error fetching %+v: %+v", property, err)
 		}
 
-		propertyResults.InventoryID = property.InventoryID
+		propertyResults.PropertyName = property.InventoryID
 
 		logging.Info(ctx, logging.Data{"property": property, "function": "listenForProperties"}, "store property request")
 		c.results <- propertyResults

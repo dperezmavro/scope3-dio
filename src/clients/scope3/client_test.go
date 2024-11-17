@@ -43,8 +43,8 @@ func TestGet(t *testing.T) {
 				t.Errorf("unexpected error: %+v", err)
 			}
 
-			if resp.InventoryID != tt.pq.InventoryID {
-				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, resp.InventoryID)
+			if resp.PropertyName != tt.pq.InventoryID {
+				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, resp.PropertyName)
 			}
 
 			if resp.UtcDateTime != tt.pq.UtcDateTime {
@@ -108,8 +108,8 @@ func TestChannels(t *testing.T) {
 			result := <-tt.results
 
 			// assert
-			if result.InventoryID != tt.pq.InventoryID {
-				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, result.InventoryID)
+			if result.PropertyName != tt.pq.InventoryID {
+				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, result.PropertyName)
 			}
 		})
 	}

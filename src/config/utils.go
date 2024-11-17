@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // gets a string value from the environment
@@ -15,6 +16,17 @@ func fromEnvStringDefault(k, d string) string {
 	}
 
 	return v
+}
+
+// gets a string value from the environment
+// convenience function, guarantees non-empty value or error
+func fromEnvBoolDefault(k string, d bool) bool {
+	v := os.Getenv(k)
+	if strings.ToLower(v) == "true" {
+		return true
+	}
+
+	return d
 }
 
 // gets a string value from the environment

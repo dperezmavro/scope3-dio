@@ -23,12 +23,12 @@ type MeasureAPIRequest struct {
 
 // PropertyResponse is a custom type defined for moving data around here
 type PropertyResponse struct {
-	InventoryID string
-	UtcDateTime string
-	Body        string
-	Weight      int
+	PropertyName   string `json:"propertyName,omitempty"`
+	UtcDateTime    string `json:"utcDateTime,omitempty"`
+	TotalEmissions string `json:"totalEmissions"`
+	Weight         int    `json:"weight,omitempty"`
 }
 
 func (p PropertyResponse) IndexName() string {
-	return fmt.Sprintf("%s-%s", p.UtcDateTime, p.InventoryID)
+	return fmt.Sprintf("%s-%s", p.UtcDateTime, p.PropertyName)
 }

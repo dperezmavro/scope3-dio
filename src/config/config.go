@@ -6,6 +6,7 @@ import "fmt"
 func New() (*Config, error) {
 	envName := fromEnvStringDefault(envVarEnvName, defaultEnvName)
 	serviceName := fromEnvStringDefault(envVarServiceName, defaultServiceName)
+	waitForMissing := fromEnvBoolDefault(envVarWaitForMissing, defaultWaitForMissing)
 
 	apiToken, err := fromEnvString(envVarAPIToken)
 	if err != nil {
@@ -32,7 +33,7 @@ func New() (*Config, error) {
 		},
 		Port:           port,
 		Scope3APIToken: apiToken,
-		WaitForMissing: defaultWaitForMissing,
+		WaitForMissing: waitForMissing,
 	}
 
 	return c, nil

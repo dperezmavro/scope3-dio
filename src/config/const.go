@@ -16,6 +16,9 @@ const (
 
 	// scope3 api token
 	envVarAPIToken = "SCOPE3_API_TOKEN"
+
+	// envVarWaitForMissing is the envrionment variable that controls waiting behaviour
+	envVarWaitForMissing = "WAIT_FOR_MISSING"
 )
 
 // defaults
