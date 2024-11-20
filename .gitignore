@@ -5,3 +5,6 @@ bin/
 *.json
 .vscode/
 .DS_Store
+*.log
+*.out
+*.test

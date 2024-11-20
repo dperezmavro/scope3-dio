@@ -3,3 +3,6 @@ bin/
 *.sh
 *secret*
 .vscode/
+*.log
+*.out
+*.test
