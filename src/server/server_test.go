@@ -14,6 +14,7 @@ import (
 
 func TestRoutes(t *testing.T) {
 	tests := []struct {
+		name    string
 		path    string
 		method  string
 		headers map[string]string
@@ -21,21 +22,25 @@ func TestRoutes(t *testing.T) {
 		body    string
 	}{
 		{
+			name:   "path no exists",
 			path:   "/noexist",
 			status: http.StatusNotFound,
 			method: http.MethodGet,
 		},
 		{
+			name:   "healtch",
 			path:   "/healthcheck",
 			status: http.StatusOK,
 			method: http.MethodGet,
 		},
 		{
+			name:   "missing auth",
 			method: http.MethodPost,
 			path:   "/v2/measure",
 			status: http.StatusUnauthorized,
 		},
 		{
+			name:   "missing rows",
 			method: http.MethodPost,
 			path:   "/v2/measure",
 			status: http.StatusBadRequest,
@@ -45,7 +50,28 @@ func TestRoutes(t *testing.T) {
 			body: `{}`,
 		},
 		{
+			name:   "empty rows",
 			method: http.MethodPost,
+			path:   "/v2/measure",
+			status: http.StatusBadRequest,
+			headers: map[string]string{
+				common.HeaderAuthorization: "dummy",
+			},
+			body: `{"rows": []}`,
+		},
+		{
+			name:   "empty object",
+			method: http.MethodPost,
+			path:   "/v2/measure",
+			status: http.StatusOK,
+			headers: map[string]string{
+				common.HeaderAuthorization: "dummy",
+			},
+			body: `{"rows": [{}]}`,
+		},
+		{
+			method: http.MethodPost,
+			name:   "well-formed request",
 			path:   "/v2/measure",
 			status: http.StatusOK,
 			headers: map[string]string{
@@ -56,7 +82,7 @@ func TestRoutes(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.path, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			var body *bytes.Buffer
 			body = bytes.NewBuffer([]byte(tt.body))
 			request := httptest.NewRequest(tt.method, tt.path, body)
