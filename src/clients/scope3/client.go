@@ -107,6 +107,8 @@ func (s *Client) fetchProperty(
 	defer resp.Body.Close()
 
 	m := MeasureAPIResponse{
+		// pre-allocate this to avoid resizing
+		// pprof benchmarking shows this resizes on each request if not pre-allocated
 		Rows: make([]Row, len(pq)),
 	}
 	err = json.Unmarshal(b, &m)
