@@ -47,11 +47,11 @@ func TestRoutes(t *testing.T) {
 		{
 			method: http.MethodPost,
 			path:   "/v2/measure",
-			status: http.StatusBadRequest,
+			status: http.StatusOK,
 			headers: map[string]string{
 				common.HeaderAuthorization: "dummy",
 			},
-			body: `{"rows": [{}]}`,
+			body: `{"rows": [{"propertyId":"nytimes.com","urcDateTime":"2024-10-30","impressions":1000}]}`,
 		},
 	}
 

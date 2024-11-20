@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/dperezmavro/scope3-dio/src/common"
@@ -13,9 +12,10 @@ import (
 
 func TestGet(t *testing.T) {
 	tests := []struct {
-		name         string
-		pq           common.PropertyQuery
-		responseBody string
+		name                  string
+		pq                    common.PropertyQuery
+		responseBody          string
+		numOfResponseReecords int
 	}{
 		{
 			name: "default",
@@ -25,12 +25,13 @@ func TestGet(t *testing.T) {
 				InventoryID: "nytimes.com",
 				UtcDateTime: "2024-10-28",
 			},
-			responseBody: `{"rows": [{"InventoryID":"nytimes.com","UtcDateTime":"2024-10-28","Body":"66.09248372608445","Weight":10}]}`,
+			numOfResponseReecords: 1,
+			responseBody:          `{"rows": [{"InventoryID":"nytimes.com","UtcDateTime":"2024-10-28","Body":"66.09248372608445","Weight":10}]}`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cl := New("dummy", nil, nil, nil, nil)
+			cl := New("dummy", nil, nil, nil)
 			m := &ClientMock{
 				t:    t,
 				body: tt.responseBody,
@@ -38,17 +39,21 @@ func TestGet(t *testing.T) {
 			cl.hc = m
 
 			ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "unused")
-			resp, err := cl.fetchProperty(ctx, tt.pq)
+			resp, err := cl.fetchProperty(ctx, []common.PropertyQuery{tt.pq})
 			if err != nil {
 				t.Errorf("unexpected error: %+v", err)
 			}
 
-			if resp.PropertyName != tt.pq.InventoryID {
-				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, resp.PropertyName)
+			if len(resp) != tt.numOfResponseReecords {
+				t.Errorf("incorrect response length: wanted %d, got %d", tt.numOfResponseReecords, len(resp))
 			}
 
-			if resp.UtcDateTime != tt.pq.UtcDateTime {
-				t.Errorf("invalid UtcDateTime: wanted %s, got %s", tt.pq.UtcDateTime, resp.UtcDateTime)
+			if resp[0].PropertyName != tt.pq.InventoryID {
+				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, resp[0].PropertyName)
+			}
+
+			if resp[0].UtcDateTime != tt.pq.UtcDateTime {
+				t.Errorf("invalid UtcDateTime: wanted %s, got %s", tt.pq.UtcDateTime, resp[0].UtcDateTime)
 			}
 		})
 	}
@@ -58,18 +63,16 @@ func TestChannels(t *testing.T) {
 	tests := []struct {
 		name         string
 		errChan      chan error
-		queries      chan common.PropertyQuery
-		results      chan common.PropertyResponse
-		wg           *sync.WaitGroup
+		queries      chan []common.PropertyQuery
+		results      chan []common.PropertyResponse
 		pq           common.PropertyQuery
 		responseBody string
 	}{
 		{
 			name:    "default",
 			errChan: make(chan error),
-			queries: make(chan common.PropertyQuery),
-			results: make(chan common.PropertyResponse),
-			wg:      &sync.WaitGroup{},
+			queries: make(chan []common.PropertyQuery),
+			results: make(chan []common.PropertyResponse),
 			pq: common.PropertyQuery{
 				Impressions: 1000,
 				Weight:      10,
@@ -87,7 +90,6 @@ func TestChannels(t *testing.T) {
 				tt.errChan,
 				tt.queries,
 				tt.results,
-				tt.wg,
 			)
 
 			m := &ClientMock{
@@ -102,14 +104,14 @@ func TestChannels(t *testing.T) {
 			cl.StartListening(ctx)
 
 			t.Log("sending query")
-			tt.queries <- tt.pq
+			tt.queries <- []common.PropertyQuery{tt.pq}
 
 			t.Log("getting result")
 			result := <-tt.results
 
 			// assert
-			if result.PropertyName != tt.pq.InventoryID {
-				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, result.PropertyName)
+			if result[0].PropertyName != tt.pq.InventoryID {
+				t.Errorf("invalid InventoryID: wanted %s, got %s", tt.pq.InventoryID, result[0].PropertyName)
 			}
 		})
 	}

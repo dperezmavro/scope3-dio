@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"errors"
-	"sync"
 	"time"
 
 	"github.com/dgraph-io/ristretto/v2"
@@ -16,9 +15,8 @@ const defaultCacheTTL = 24 * time.Hour
 func New(
 	cache Implementation,
 	errorChan chan error,
-	queries chan common.PropertyQuery,
-	results chan common.PropertyResponse,
-	wg *sync.WaitGroup,
+	queries chan []common.PropertyQuery,
+	results chan []common.PropertyResponse,
 	waitForMissing bool,
 ) (*Client, error) {
 
@@ -26,15 +24,12 @@ func New(
 		errors:                errorChan,
 		queries:               queries,
 		results:               results,
-		wg:                    wg,
 		cache:                 cache,
 		waitForMissingResults: waitForMissing,
 	}, nil
 }
 
 func (s *Client) StartListening(ctx context.Context) {
-	// wait for the listenForProperties goroutine
-	s.wg.Add(1)
 	logging.Info(
 		ctx,
 		logging.Data{
@@ -49,14 +44,16 @@ func (s *Client) StartListening(ctx context.Context) {
 
 func listenForResults(c *Client) {
 	for {
-		property := <-c.results
+		properties := <-c.results
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenForResults")
-		logging.Info(ctx, logging.Data{"property": property, "weight": property.Weight}, "storing property")
-		ok := c.cache.SetWithTTL(property.IndexName(), property, int64(property.Weight), defaultCacheTTL)
-		if !ok {
-			err := errors.New("unable to set key")
-			logging.Error(ctx, err, logging.Data{"key": property.IndexName(), "result": property.TotalEmissions}, "save error")
-			c.errors <- err
+		logging.Info(ctx, logging.Data{"properties": properties}, "storing properties")
+		for _, pr := range properties {
+			ok := c.cache.SetWithTTL(pr.IndexName(), pr, int64(pr.Weight), defaultCacheTTL)
+			if !ok {
+				err := errors.New("unable to set key")
+				logging.Error(ctx, err, logging.Data{"key": pr.IndexName(), "result": pr.TotalEmissions}, "save error")
+				c.errors <- err
+			}
 		}
 	}
 }
@@ -64,23 +61,19 @@ func listenForResults(c *Client) {
 func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []common.PropertyResponse {
 	// pre-allocate to avoid resizing
 	res := make([]common.PropertyResponse, len(queries))
-	notFound := make(map[string]bool, len(queries))
+	notFoundMap := make(map[string]bool, len(queries))
+	notFoundSlice := make([]common.PropertyQuery, len(queries))
 	foundCounter := 0
 	notFoundCounter := 0
 	for _, pq := range queries {
-
 		localSotrageIndex := pq.IndexName()
 		v, found := s.cache.Get(localSotrageIndex)
 
 		if !found {
-			notFound[pq.IndexName()] = true
+			notFoundMap[pq.IndexName()] = true
+			notFoundSlice[notFoundCounter] = pq
 			notFoundCounter++
 			logging.Info(ctx, logging.Data{"property": pq.IndexName()}, "property not found locally")
-			s.wg.Add(1)
-			go func() {
-				defer s.wg.Done()
-				s.queries <- pq
-			}()
 		} else {
 			logging.Info(ctx, logging.Data{"property": pq.IndexName()}, "property exists locally")
 			res[foundCounter] = v
@@ -88,6 +81,10 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []comm
 		}
 
 	}
+
+	go func() {
+		s.queries <- notFoundSlice[:notFoundCounter]
+	}()
 
 	if !s.waitForMissingResults {
 		return res[:foundCounter]
@@ -104,14 +101,14 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []comm
 			return res[:foundCounter]
 		case <-tick:
 			logging.Info(ctx, logging.Data{"tick": true}, "search wait")
-			for k := range notFound {
+			for k := range notFoundMap {
 				val, found := s.cache.Get(k)
 				if found {
 					logging.Info(ctx, logging.Data{"tick": true, "found": true, "val": val}, "search wait")
 					res[foundCounter] = val
 					foundCounter++
 					notFoundCounter--
-					delete(notFound, k)
+					delete(notFoundMap, k)
 				}
 			}
 		}

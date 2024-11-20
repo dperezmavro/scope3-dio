@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"sync"
 	"time"
 
 	"github.com/dgraph-io/ristretto/v2"
@@ -12,9 +11,8 @@ import (
 type Client struct {
 	// channels for communicating with other goroutes to share results
 	errors  chan error
-	queries chan common.PropertyQuery
-	results chan common.PropertyResponse
-	wg      *sync.WaitGroup
+	queries chan []common.PropertyQuery
+	results chan []common.PropertyResponse
 
 	// in-memory cache
 	cache                 Implementation

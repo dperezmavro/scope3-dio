@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"sync"
 
 	"github.com/dperezmavro/scope3-dio/src/common"
 	"github.com/dperezmavro/scope3-dio/src/logging"
@@ -17,18 +16,16 @@ import (
 type Client struct {
 	hc       HTTPClient
 	apiToken string
-	queries  chan common.PropertyQuery
-	results  chan common.PropertyResponse
+	queries  chan []common.PropertyQuery
+	results  chan []common.PropertyResponse
 	errors   chan error
-	wg       *sync.WaitGroup
 }
 
 func New(
 	token string,
 	errors chan error,
-	queries chan common.PropertyQuery,
-	results chan common.PropertyResponse,
-	wg *sync.WaitGroup,
+	queries chan []common.PropertyQuery,
+	results chan []common.PropertyResponse,
 ) Client {
 	c := Client{
 		hc:       http.DefaultClient,
@@ -36,7 +33,6 @@ func New(
 		queries:  queries,
 		results:  results,
 		errors:   errors,
-		wg:       wg,
 	}
 
 	return c
@@ -44,7 +40,6 @@ func New(
 
 func (s *Client) StartListening(ctx context.Context) {
 	// wait for the listenForProperties goroutine
-	s.wg.Add(1)
 	logging.Info(
 		ctx,
 		logging.Data{
@@ -57,22 +52,25 @@ func (s *Client) StartListening(ctx context.Context) {
 	go listenForProperties(s)
 }
 
-func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (common.PropertyResponse, error) {
+func (s *Client) fetchProperty(ctx context.Context, pq []common.PropertyQuery) ([]common.PropertyResponse, error) {
+	rowItems := make([]RowItem, len(pq))
+	for idx, p := range pq {
+		rowItems[idx] = RowItem{
+			Channel:     p.Channel,
+			Country:     p.Country,
+			Impressions: p.Impressions,
+			InventoryID: p.InventoryID,
+			UtcDateTime: p.UtcDateTime,
+		}
+	}
+
 	r := MeasureAPIRequest{
-		Rows: []RowItem{
-			{
-				Channel:     pq.Channel,
-				Country:     pq.Country,
-				Impressions: pq.Impressions,
-				InventoryID: pq.InventoryID,
-				UtcDateTime: pq.UtcDateTime,
-			},
-		},
+		Rows: rowItems,
 	}
 	requestBody, err := json.Marshal(r)
 	if err != nil {
 		logging.Error(ctx, err, logging.Data{"properties": pq, "function": "fetchProperty"}, "error marhsaling body")
-		return common.PropertyResponse{}, fmt.Errorf("unable to marshal request for properties %+v: %+v", pq, err)
+		return []common.PropertyResponse{}, fmt.Errorf("unable to marshal request for properties %+v: %+v", pq, err)
 	}
 
 	req, err := http.NewRequest(
@@ -84,19 +82,19 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 
 	if err != nil {
 		logging.Error(ctx, err, logging.Data{"properties": pq, "function": "fetchProperty"}, "error creating request")
-		return common.PropertyResponse{}, fmt.Errorf("unable to create request for properties %+v: %+v", pq, err)
+		return []common.PropertyResponse{}, fmt.Errorf("unable to create request for properties %+v: %+v", pq, err)
 	}
 
 	resp, err := s.hc.Do(req)
 	if err != nil {
 		logging.Error(ctx, err, logging.Data{"request": req, "function": "fetchProperty"}, "request-sending")
-		return common.PropertyResponse{}, fmt.Errorf("unable to perform request for properties %+v: %+v", pq, err)
+		return []common.PropertyResponse{}, fmt.Errorf("unable to perform request for properties %+v: %+v", pq, err)
 	}
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logging.Error(ctx, err, logging.Data{"properties": pq, "function": "fetchProperty"}, "error reading response")
-		return common.PropertyResponse{}, fmt.Errorf("unable to read response for request properties %+v: %+v", pq, err)
+		return []common.PropertyResponse{}, fmt.Errorf("unable to read response for request properties %+v: %+v", pq, err)
 	}
 	defer resp.Body.Close()
 
@@ -113,41 +111,40 @@ func (s *Client) fetchProperty(ctx context.Context, pq common.PropertyQuery) (co
 			},
 			"unable to unmarshal api response",
 		)
-		return common.PropertyResponse{}, fmt.Errorf("unable to unmarshal api response: %+v", err)
+		return []common.PropertyResponse{}, fmt.Errorf("unable to unmarshal api response: %+v", err)
 	}
 
 	logging.Info(ctx, logging.Data{"rows": m.Rows}, "response")
 
 	if len(m.Rows) < 1 {
-		return common.PropertyResponse{
-			PropertyName:   pq.InventoryID,
-			UtcDateTime:    pq.UtcDateTime,
-			TotalEmissions: "",
-		}, nil
+		return []common.PropertyResponse{}, nil
 	}
 
-	return common.PropertyResponse{
-		PropertyName:   pq.InventoryID,
-		UtcDateTime:    pq.UtcDateTime,
-		Weight:         pq.Weight,
-		TotalEmissions: fmt.Sprintf("%v", m.Rows[0].TotalEmissions),
-	}, nil
+	responses := make([]common.PropertyResponse, len(m.Rows))
+	for idx, r := range m.Rows {
+		responses[idx] = common.PropertyResponse{
+			PropertyName:   r.InventoryID,
+			UtcDateTime:    pq[idx].UtcDateTime,
+			Weight:         pq[idx].Weight,
+			TotalEmissions: fmt.Sprintf("%v", r.TotalEmissions),
+		}
+	}
+
+	return responses, nil
 }
 
 func listenForProperties(c *Client) {
 	for {
-		property := <-c.queries
+		properties := <-c.queries
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenforproperties")
-		logging.Info(ctx, logging.Data{"properties": property}, "fetching property")
-		propertyResults, err := c.fetchProperty(ctx, property)
+		logging.Info(ctx, logging.Data{"properties": properties}, "fetching properties")
+		propertyResults, err := c.fetchProperty(ctx, properties)
 		if err != nil {
-			logging.Error(ctx, err, logging.Data{"properties": property}, "error in fetching")
-			c.errors <- fmt.Errorf("error fetching %+v: %+v", property, err)
+			logging.Error(ctx, err, logging.Data{"properties": properties}, "error in fetching")
+			c.errors <- fmt.Errorf("error fetching %+v: %+v", properties, err)
 		}
 
-		propertyResults.PropertyName = property.InventoryID
-
-		logging.Info(ctx, logging.Data{"property": property, "function": "listenForProperties"}, "store property request")
+		logging.Info(ctx, logging.Data{"properties": properties, "function": "listenForProperties"}, "store properties request")
 		c.results <- propertyResults
 	}
 }

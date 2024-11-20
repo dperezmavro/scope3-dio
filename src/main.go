@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/dperezmavro/scope3-dio/src/clients/scope3"
 	"github.com/dperezmavro/scope3-dio/src/common"
@@ -15,10 +14,9 @@ import (
 )
 
 var (
-	queryChannel    = make(chan common.PropertyQuery)
-	responseChannel = make(chan common.PropertyResponse)
+	queryChannel    = make(chan []common.PropertyQuery)
+	responseChannel = make(chan []common.PropertyResponse)
 	errorChannel    = make(chan error)
-	wg              = &sync.WaitGroup{}
 )
 
 func main() {
@@ -38,7 +36,6 @@ func main() {
 		errorChannel,
 		queryChannel,
 		responseChannel,
-		wg,
 	)
 
 	// start listening for async fetches
@@ -54,7 +51,6 @@ func main() {
 		errorChannel,
 		queryChannel,
 		responseChannel,
-		wg,
 		conf.WaitForMissing,
 	)
 	if err != nil {
@@ -65,7 +61,6 @@ func main() {
 	storageClient.StartListening(ctx)
 
 	// start listening to error channel
-	wg.Add(1)
 	go func() {
 		logging.Info(ctx, logging.Data{"goroutine": "main error listener"}, "listener starting")
 		for {
@@ -86,6 +81,4 @@ func main() {
 	if err != nil {
 		logging.Fatal(ctx, err, nil, "service crashed")
 	}
-
-	wg.Wait()
 }
