@@ -107,7 +107,7 @@ func (s *Client) fetchProperty(
 	defer resp.Body.Close()
 
 	m := MeasureAPIResponse{
-		// Rows: make([]Row, len(pq)),
+		Rows: make([]Row, len(pq)),
 	}
 	err = json.Unmarshal(b, &m)
 	if err != nil {
