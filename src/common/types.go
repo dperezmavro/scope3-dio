@@ -32,10 +32,12 @@ func (p *PropertyQuery) Validate() error {
 		p.Impressions = defaultImpressions
 	}
 
-	if p.Weight >= 0 && p.Weight < defaultWeight {
-		p.Weight = defaultWeight - p.Weight
+	if p.Weight >= defaultWeight {
+		p.Weight = 1 // set to minimum cost
+	} else if p.Weight >= 0 && p.Weight < defaultWeight {
+		p.Weight = defaultWeight - p.Weight // set to cost relative to default cost
 	} else {
-		p.Weight = defaultWeight
+		p.Weight = defaultWeight // set to default cost
 	}
 
 	return nil

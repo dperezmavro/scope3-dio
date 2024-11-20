@@ -43,9 +43,10 @@ func (s *Client) StartListening(ctx context.Context) {
 }
 
 func listenForResults(c *Client) {
+	ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenForResults")
+	logging.Info(ctx, logging.Data{"client": "storage", "phase": "init"}, "listenForResults")
 	for {
 		properties := <-c.results
-		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenForResults")
 		logging.Info(ctx, logging.Data{"properties": properties}, "storing properties")
 		for _, pr := range properties {
 			ok := c.cache.SetWithTTL(pr.IndexName(), pr, int64(pr.Weight), defaultCacheTTL)
@@ -82,9 +83,10 @@ func (s *Client) Get(ctx context.Context, queries []common.PropertyQuery) []comm
 
 	}
 
-	go func() {
-		s.queries <- notFoundSlice[:notFoundCounter]
-	}()
+	go func(r []common.PropertyQuery) {
+		logging.Info(ctx, logging.Data{"r": r}, "sending for fetching")
+		s.queries <- r
+	}(notFoundSlice[:notFoundCounter])
 
 	if !s.waitForMissingResults {
 		return res[:foundCounter]
