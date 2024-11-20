@@ -32,8 +32,8 @@ test:
 bench:
 	go test \
 		-benchmem \
-		-run='^$' \
-		-bench '^BenchmarkChannels$' \
+		-run='' \
+		-bench 'BenchmarkChannels' \
 		-benchtime=10000x \
 		-memprofile memprofile.out \
-		github.com/dperezmavro/scope3-dio/src/clients/scope3 | tee benchmark.log
+		github.com/dperezmavro/scope3-dio/src/clients/scope3
