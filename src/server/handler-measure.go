@@ -39,22 +39,11 @@ func measure(sc StorageClient) http.HandlerFunc {
 		}
 
 		// do some sanity checking on the values
+		validRows := make([]common.PropertyQuery, len(data.Rows))
+		validRowsCounter := 0
 		for _, row := range data.Rows {
-			if row.InventoryID == "" {
-				logging.Error(
-					ctx,
-					errors.New("missing val"),
-					logging.Data{
-						"param":    "InventoryID",
-						"function": "measure",
-					},
-					"missing value",
-				)
-				utils.WriteResponse(w, r, map[string]string{"error": "missing inventoryId"}, http.StatusBadRequest)
-				return
-			}
-
-			if row.UtcDateTime == "UtcDateTime" {
+			err := row.Validate(ctx)
+			if err != nil {
 				logging.Error(
 					ctx,
 					errors.New("missing val"),
@@ -64,20 +53,13 @@ func measure(sc StorageClient) http.HandlerFunc {
 					},
 					"missing value",
 				)
-				utils.WriteResponse(w, r, map[string]string{"error": "missing utcDateTime"}, http.StatusBadRequest)
-				return
+				continue
 			}
-
-			if row.Impressions == 0 {
-				row.Impressions = 1000
-			}
-
-			if row.Weight == 0 {
-				row.Weight = 1
-			}
+			validRows[validRowsCounter] = row
+			validRowsCounter++
 		}
 
-		results := sc.Get(ctx, data.Rows)
+		results := sc.Get(ctx, validRows[:validRowsCounter])
 		resp, err := json.Marshal(results)
 		if err != nil {
 			logging.Error(ctx, err, nil, "marshal error")

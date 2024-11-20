@@ -1,6 +1,10 @@
 package common
 
-import "fmt"
+import (
+	"context"
+	"errors"
+	"fmt"
+)
 
 // PropertyQuery is the format that the scope 3 api expects for this endpoint
 type PropertyQuery struct {
@@ -14,6 +18,28 @@ type PropertyQuery struct {
 
 func (p PropertyQuery) IndexName() string {
 	return fmt.Sprintf("%s-%s", p.UtcDateTime, p.InventoryID)
+}
+
+func (p PropertyQuery) Validate(ctx context.Context) error {
+	if p.InventoryID == "" {
+		return errors.New("empty value for InventoryId")
+	}
+
+	if p.UtcDateTime == "" {
+		return errors.New("empty value for UtcDateTime")
+	}
+
+	if p.Impressions == 0 {
+		p.Impressions = defaultImpressions
+	}
+
+	if p.Weight >= 0 && p.Weight < defaultWeight {
+		p.Weight = defaultWeight - p.Weight
+	} else {
+		p.Weight = defaultWeight
+	}
+
+	return nil
 }
 
 // MeasureAPIRequest is the incoming request struct

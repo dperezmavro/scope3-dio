@@ -16,3 +16,8 @@ const (
 	// HeaderValueContentTypeJSON represents the value for this content type
 	HeaderValueContentTypeJSON = "application/json"
 )
+
+const (
+	defaultImpressions = 1000
+	defaultWeight      = 100
+)
