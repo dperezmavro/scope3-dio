@@ -1,7 +1,6 @@
 package common
 
 import (
-	"context"
 	"errors"
 	"fmt"
 )
@@ -20,7 +19,7 @@ func (p PropertyQuery) IndexName() string {
 	return fmt.Sprintf("%s-%s", p.UtcDateTime, p.InventoryID)
 }
 
-func (p PropertyQuery) Validate(ctx context.Context) error {
+func (p *PropertyQuery) Validate() error {
 	if p.InventoryID == "" {
 		return errors.New("empty value for InventoryId")
 	}

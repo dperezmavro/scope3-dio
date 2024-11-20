@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 
@@ -42,11 +41,11 @@ func measure(sc StorageClient) http.HandlerFunc {
 		validRows := make([]common.PropertyQuery, len(data.Rows))
 		validRowsCounter := 0
 		for _, row := range data.Rows {
-			err := row.Validate(ctx)
-			if err != nil {
+			rowErr := row.Validate()
+			if rowErr != nil {
 				logging.Error(
 					ctx,
-					errors.New("missing val"),
+					rowErr,
 					logging.Data{
 						"param":    "UtcDateTime",
 						"function": "measure",

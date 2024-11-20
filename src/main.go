@@ -36,6 +36,7 @@ func main() {
 		errorChannel,
 		queryChannel,
 		responseChannel,
+		10,
 	)
 
 	// start listening for async fetches

@@ -14,11 +14,12 @@ import (
 
 // Client is the client to interact with the scope3 api
 type Client struct {
-	hc       HTTPClient
-	apiToken string
-	queries  chan []common.PropertyQuery
-	results  chan []common.PropertyResponse
-	errors   chan error
+	hc              HTTPClient
+	apiToken        string
+	queries         chan []common.PropertyQuery
+	results         chan []common.PropertyResponse
+	errors          chan error
+	numberOfWorkers int
 }
 
 func New(
@@ -26,13 +27,15 @@ func New(
 	errors chan error,
 	queries chan []common.PropertyQuery,
 	results chan []common.PropertyResponse,
+	workerNo int,
 ) Client {
 	c := Client{
-		hc:       http.DefaultClient,
-		apiToken: token,
-		queries:  queries,
-		results:  results,
-		errors:   errors,
+		hc:              http.DefaultClient,
+		apiToken:        token,
+		queries:         queries,
+		results:         results,
+		errors:          errors,
+		numberOfWorkers: workerNo,
 	}
 
 	return c
@@ -49,10 +52,15 @@ func (s *Client) StartListening(ctx context.Context) {
 		},
 		"listener starting",
 	)
-	go listenForProperties(s)
+	for i := 0; i < s.numberOfWorkers; i++ {
+		go listenForProperties(ctx, s, i)
+	}
 }
 
-func (s *Client) fetchProperty(ctx context.Context, pq []common.PropertyQuery) ([]common.PropertyResponse, error) {
+func (s *Client) fetchProperty(
+	ctx context.Context,
+	pq []common.PropertyQuery,
+) ([]common.PropertyResponse, error) {
 	rowItems := make([]RowItem, len(pq))
 	for idx, p := range pq {
 		rowItems[idx] = RowItem{
@@ -98,7 +106,9 @@ func (s *Client) fetchProperty(ctx context.Context, pq []common.PropertyQuery) (
 	}
 	defer resp.Body.Close()
 
-	m := MeasureAPIResponse{}
+	m := MeasureAPIResponse{
+		// Rows: make([]Row, len(pq)),
+	}
 	err = json.Unmarshal(b, &m)
 	if err != nil {
 		logging.Error(
@@ -114,7 +124,7 @@ func (s *Client) fetchProperty(ctx context.Context, pq []common.PropertyQuery) (
 		return []common.PropertyResponse{}, fmt.Errorf("unable to unmarshal api response: %+v", err)
 	}
 
-	logging.Info(ctx, logging.Data{"rows": m.Rows}, "response")
+	logging.Info(ctx, logging.Data{"rows": m.Rows, "pq": pq}, "response")
 
 	if len(m.Rows) < 1 {
 		return []common.PropertyResponse{}, nil
@@ -133,18 +143,27 @@ func (s *Client) fetchProperty(ctx context.Context, pq []common.PropertyQuery) (
 	return responses, nil
 }
 
-func listenForProperties(c *Client) {
+func listenForProperties(ctx context.Context, c *Client, workerID int) {
+	logging.Info(ctx, logging.Data{"id": workerID}, "scope3 worker started")
 	for {
 		properties := <-c.queries
 		ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "listenforproperties")
-		logging.Info(ctx, logging.Data{"properties": properties}, "fetching properties")
+		logData := logging.Data{"properties": properties, "workerId": workerID}
+		logging.Info(ctx, logData, "fetching properties")
 		propertyResults, err := c.fetchProperty(ctx, properties)
 		if err != nil {
-			logging.Error(ctx, err, logging.Data{"properties": properties}, "error in fetching")
+			logging.Error(ctx, err, logData, "error in fetching")
 			c.errors <- fmt.Errorf("error fetching %+v: %+v", properties, err)
 		}
 
-		logging.Info(ctx, logging.Data{"properties": properties, "function": "listenForProperties"}, "store properties request")
+		logging.Info(ctx,
+			logging.Data{
+				"properties": properties,
+				"function":   "listenForProperties",
+				"workerId":   workerID,
+			},
+			"store properties request",
+		)
 		c.results <- propertyResults
 	}
 }

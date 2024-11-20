@@ -31,7 +31,7 @@ func TestGet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cl := New("dummy", nil, nil, nil)
+			cl := New("dummy", nil, nil, nil, 5)
 			m := &ClientMock{
 				t:    t,
 				body: tt.responseBody,
@@ -90,6 +90,7 @@ func TestChannels(t *testing.T) {
 				tt.errChan,
 				tt.queries,
 				tt.results,
+				5,
 			)
 
 			m := &ClientMock{
@@ -117,13 +118,72 @@ func TestChannels(t *testing.T) {
 	}
 }
 
+func BenchmarkChannels(b *testing.B) {
+	// setup
+	errChan := make(chan error)
+	queries := make(chan []common.PropertyQuery)
+	results := make(chan []common.PropertyResponse)
+	pq := []common.PropertyQuery{
+		{
+			Impressions: 1000,
+			Weight:      10,
+			InventoryID: "nytimes.com",
+			UtcDateTime: "2024-10-28",
+		},
+		{
+			Impressions: 1000,
+			Weight:      10,
+			InventoryID: "nba.com",
+			UtcDateTime: "2024-10-28",
+		},
+	}
+	responseBody := `{"rows": [{"InventoryID":"nytimes.com","UtcDateTime":"2024-10-28","Body":"66.09248372608445","Weight":10},{"InventoryID":"nba.com","UtcDateTime":"2024-10-28","Body":"66.09248372608445","Weight":10}]}`
+	cl := New(
+		"dummy",
+		errChan,
+		queries,
+		results,
+		5,
+	)
+
+	m := &ClientMock{
+		t:    nil,
+		b:    b,
+		body: responseBody,
+	}
+	cl.hc = m
+
+	// execute
+	b.Log("start client listener")
+	ctx := context.WithValue(context.Background(), common.CtxKeyTraceID, "unused")
+	cl.StartListening(ctx)
+
+	// simulate storage listener
+	go func() {
+		for {
+			result := <-results
+			b.Logf("get result %+v", result)
+		}
+	}()
+
+	for n := 0; n < b.N; n++ {
+		b.Log("sending query")
+		queries <- pq
+	}
+}
+
 type ClientMock struct {
 	t    *testing.T
+	b    *testing.B
 	body string
 }
 
 func (c *ClientMock) Do(req *http.Request) (*http.Response, error) {
-	c.t.Helper()
+	if c.t != nil {
+		c.t.Helper()
+	} else {
+		c.b.Helper()
+	}
 	return &http.Response{
 		Body: io.NopCloser(strings.NewReader(c.body)),
 	}, nil
